@@ -6,10 +6,18 @@ import "./IERC20.sol";
 import "./SafuInvestmentsPresale.sol";
 import "./SafuInvestmentsInfo.sol";
 
+interface IPancakeFactory {
+    function getPair(address tokenA, address tokenB) external view returns (address pair);
+}
+
 contract SafuInvestmentsFactory {
     using SafeMath for uint256;
 
     event PresaleCreated(bytes32 title, uint256 safuId, address creator);
+
+    IPancakeFactory private constant PancakeFactory =
+    IPancakeFactory(address(0x6725F303b657a9451d8BA641348b6761A6CC7a17));
+    address private constant wbnbAddress = address(0x094616F0BdFB0b526bD735Bf66Eca0Ad254ca81F);
 
 
     SafuInvestmentsInfo public immutable SAFU;
@@ -92,6 +100,8 @@ contract SafuInvestmentsFactory {
 
         SafuInvestmentsPresale presale = new SafuInvestmentsPresale(address(this), owner);
 
+        address existingPairAddress = PancakeFactory.getPair(address(token), wbnbAddress);
+        require(existingPairAddress == address(0)); // token should not be listed in Pancakeswap
 
         uint256 maxEthPoolTokenAmount = _info.hardCapInWei.mul(100).div(100);
         uint256 maxLiqPoolTokenAmount = maxEthPoolTokenAmount.mul(1e18).div(40000000);
@@ -102,7 +112,6 @@ contract SafuInvestmentsFactory {
 
         initializePresale(presale, maxTokensToBeSold, _info.tokenPriceInWei, _info, _uniInfo, _stringInfo);
 
-        
 
         uint256 safuId = SAFU.addPresaleAddress(address(presale));
 
