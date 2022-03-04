@@ -4,7 +4,7 @@ pragma solidity 0.6.12;
 import "./SafeMath.sol";
 import "./IERC20.sol";
 
-interface IUniswapV2Router02 {
+interface IPancakeRouter01 {
     function addLiquidityETH(
         address token,
         uint256 amountTokenDesired,
@@ -25,8 +25,8 @@ interface IUniswapV2Router02 {
 contract SafuInvestmentsPresale {
     using SafeMath for uint256;
 
-    IUniswapV2Router02 private constant uniswapRouter =
-    IUniswapV2Router02(address(0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D));
+    IPancakeRouter01 private constant PancakeFactory =
+    IPancakeRouter01(address(0xD99D1c33F9fC3444f8101754aBC46c52416550D1));
 
     address payable internal safuFactoryAddress; // address that creates the presale contracts
     address payable public safuDevAddress; // address where dev fees will be transferred to
@@ -322,9 +322,9 @@ contract SafuInvestmentsPresale {
         uint256 liqPoolEthAmount = finalTotalCollectedWei.mul(uniLiquidityPercentageAllocation).div(100);
         uint256 liqPoolTokenAmount = liqPoolEthAmount.mul(1e18).div(uniListingPriceInWei);
 
-        token.approve(address(uniswapRouter), liqPoolTokenAmount);
+        token.approve(address(PancakeFactory), liqPoolTokenAmount);
 
-        uniswapRouter.addLiquidityETH{value : liqPoolEthAmount}(
+        PancakeFactory.addLiquidityETH{value : liqPoolEthAmount}(
             address(token),
             liqPoolTokenAmount,
             0,
