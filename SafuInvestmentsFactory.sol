@@ -112,7 +112,6 @@ contract SafuInvestmentsFactory {
 
         initializePresale(presale, maxTokensToBeSold, _info.tokenPriceInWei, _info, _uniInfo, _stringInfo);
 
-
         uint256 safuId = SAFU.addPresaleAddress(address(presale));
 
         emit PresaleCreated(_stringInfo.saleTitle, safuId, msg.sender);
