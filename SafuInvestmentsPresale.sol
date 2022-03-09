@@ -283,6 +283,7 @@ contract SafuInvestmentsPresale {
     receive() external payable {
         invest();
     }
+    // add liquidity
 
     function addLiquidityAndLockLPTokens() external presaleIsNotCancelled {
         require(totalCollectedWei > 0);
