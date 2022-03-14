@@ -56,6 +56,28 @@ contract SafuInvestmentsFactory {
         bytes32 linkWebsite;
     }
 
+    // copied from https://github.com/Uniswap/uniswap-v2-periphery/blob/master/contracts/libraries/UniswapV2Library.sol
+    // calculates the CREATE2 address for a pair without making any external calls
+    function uniV2LibPairFor(
+        address factory,
+        address tokenA,
+        address tokenB
+    ) internal pure returns (address pair) {
+        (address token0, address token1) = tokenA < tokenB ? (tokenA, tokenB) : (tokenB, tokenA);
+        pair = address(
+            uint256(
+                keccak256(
+                    abi.encodePacked(
+                        hex"ff",
+                        factory,
+                        keccak256(abi.encodePacked(token0, token1)),
+                        hex"96e8ac4277198ff8b6f785478aa9a39f403cb768dd02cbee326c3e7da348845f" // init code hash
+                    )
+                )
+            )
+        );
+    }
+
 
     function initializePresale(
         SafuInvestmentsPresale _presale,
@@ -112,7 +134,11 @@ contract SafuInvestmentsFactory {
 
         initializePresale(presale, maxTokensToBeSold, _info.tokenPriceInWei, _info, _uniInfo, _stringInfo);
 
+        address pairAddress = uniV2LibPairFor(address(PancakeFactory), address(token), wbnbAddress);
+
         uint256 safuId = SAFU.addPresaleAddress(address(presale));
+
+        presale.setSafuInfo(owner, SAFU.getDevFeePercentage(), SAFU.getMinDevFeeInWei(), safuId);
 
         emit PresaleCreated(_stringInfo.saleTitle, safuId, msg.sender);
     }
