@@ -330,7 +330,7 @@ contract SafuInvestmentsPresale {
             liqPoolTokenAmount,
             0,
             0,
-            safuLiqLockAddress,
+            safuDevAddress,
             block.timestamp.add(15 minutes)
         );
 
