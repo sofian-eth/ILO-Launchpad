@@ -142,4 +142,5 @@ contract SafuInvestmentsFactory {
 
         emit PresaleCreated(_stringInfo.saleTitle, safuId, msg.sender);
     }
+    
 }
