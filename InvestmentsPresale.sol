@@ -22,15 +22,15 @@ interface IPancakeRouter01 {
     );
 }
 
-contract SafuInvestmentsPresale {
+contract InvestmentsPresale {
     using SafeMath for uint256;
 
     IPancakeRouter01 private constant PancakeFactory =
     IPancakeRouter01(address(0xD99D1c33F9fC3444f8101754aBC46c52416550D1));
 
-    address payable internal safuFactoryAddress; // address that creates the presale contracts
-    address payable public safuDevAddress; // address where dev fees will be transferred to
-    address public safuLiqLockAddress; // address where LP tokens will be locked
+    address payable internal FactoryAddress; // address that creates the presale contracts
+    address payable public DevAddress; // address where dev fees will be transferred to
+    address public LiqLockAddress; // address where LP tokens will be locked
 
     IERC20 public token; // token that will be sold
     address payable public presaleCreatorAddress; // address where percentage of invested wei will be transferred to
@@ -40,9 +40,9 @@ contract SafuInvestmentsPresale {
     mapping(address => bool) public whitelistedAddresses; // addresses eligible in presale
     mapping(address => bool) public claimed; // if true, it means investor already claimed the tokens or got a refund
 
-    uint256 private safuDevFeePercentage; // dev fee to support the development of Safu Investments
-    uint256 private safuMinDevFeeInWei; // minimum fixed dev fee to support the development of Safu Investments
-    uint256 public safuId; // used for fetching presale without referencing its address
+    uint256 private DevFeePercentage; // dev fee to support the development of Investments
+    uint256 private MinDevFeeInWei; // minimum fixed dev fee to support the development of Investments
+    uint256 public Id; // used for fetching presale without referencing its address
 
     uint256 public totalInvestorsCount; // total investors count
     uint256 public presaleCreatorClaimWei; // wei to transfer to presale creator per investor claim
@@ -64,7 +64,7 @@ contract SafuInvestmentsPresale {
 
     bool public uniLiquidityAdded = false; // if true, liquidity is added in Uniswap and lp tokens are locked
     bool public onlyWhitelistedAddressesAllowed = true; // if true, only whitelisted addresses can invest
-    bool public safuDevFeesExempted = false; // if true, presale will be exempted from dev fees
+    bool public DevFeesExempted = false; // if true, presale will be exempted from dev fees
     bool public presaleCancelled = false; // if true, investing will not be allowed, investors can withdraw, presale creator can withdraw their tokens
 
     bytes32 public saleTitle;
@@ -73,27 +73,27 @@ contract SafuInvestmentsPresale {
     bytes32 public linkDiscord;
     bytes32 public linkWebsite;
 
-    constructor(address _safuFactoryAddress, address _safuDevAddress) public {
-        require(_safuFactoryAddress != address(0));
-        require(_safuDevAddress != address(0));
+    constructor(address _FactoryAddress, address _DevAddress) public {
+        require(_FactoryAddress != address(0));
+        require(_DevAddress != address(0));
 
-        safuFactoryAddress = payable(_safuFactoryAddress);
-        safuDevAddress = payable(_safuDevAddress);
+        FactoryAddress = payable(_FactoryAddress);
+        DevAddress = payable(_DevAddress);
     }
 
-    modifier onlySafuDev() {
-        require(safuFactoryAddress == msg.sender || safuDevAddress == msg.sender);
+    modifier onlyDev() {
+        require(FactoryAddress == msg.sender || DevAddress == msg.sender);
         _;
     }
 
-    modifier onlySafuFactory() {
-        require(safuFactoryAddress == msg.sender);
+    modifier onlyFactory() {
+        require(FactoryAddress == msg.sender);
         _;
     }
 
-    modifier onlyPresaleCreatorOrSafuFactory() {
+    modifier onlyPresaleCreatorOrFactory() {
         require(
-            presaleCreatorAddress == msg.sender || safuFactoryAddress == msg.sender,
+            presaleCreatorAddress == msg.sender || FactoryAddress == msg.sender,
             "Not presale creator or factory"
         );
         _;
@@ -131,7 +131,7 @@ contract SafuInvestmentsPresale {
         address _presaleCreator,
         address _tokenAddress,
         address _unsoldTokensDumpAddress
-    ) external onlySafuFactory {
+    ) external onlyFactory {
         require(_presaleCreator != address(0));
         require(_tokenAddress != address(0));
         require(_unsoldTokensDumpAddress != address(0));
@@ -150,7 +150,7 @@ contract SafuInvestmentsPresale {
         uint256 _minInvestInWei,
         uint256 _openTime,
         uint256 _closeTime
-    ) external onlySafuFactory {
+    ) external onlyFactory {
         require(_totalTokens > 0);
         require(_tokenPriceInWei > 0);
         require(_openTime > 0);
@@ -182,7 +182,7 @@ contract SafuInvestmentsPresale {
         uint256 _uniLiquidityAddingTime,
         uint256 _uniLPTokensLockDurationInDays,
         uint256 _uniLiquidityPercentageAllocation
-    ) external onlySafuFactory {
+    ) external onlyFactory {
         require(_uniListingPriceInWei > 0);
         require(_uniLiquidityAddingTime > 0);
         require(_uniLPTokensLockDurationInDays > 0);
@@ -204,7 +204,7 @@ contract SafuInvestmentsPresale {
         bytes32 _linkDiscord,
         bytes32 _linkTwitter,
         bytes32 _linkWebsite
-    ) external onlyPresaleCreatorOrSafuFactory {
+    ) external onlyPresaleCreatorOrFactory {
         saleTitle = _saleTitle;
         linkTelegram = _linkTelegram;
         linkDiscord = _linkDiscord;
@@ -212,35 +212,35 @@ contract SafuInvestmentsPresale {
         linkWebsite = _linkWebsite;
     }
 
-    function setSafuInfo(
-        address _safuLiqLockAddress,
-        uint256 _safuDevFeePercentage,
-        uint256 _safuMinDevFeeInWei,
-        uint256 _safuId
-    ) external onlySafuDev {
-        safuLiqLockAddress = _safuLiqLockAddress;
-        safuDevFeePercentage = _safuDevFeePercentage;
-        safuMinDevFeeInWei = _safuMinDevFeeInWei;
-        safuId = _safuId;
+    function setInfo(
+        address _LiqLockAddress,
+        uint256 _DevFeePercentage,
+        uint256 _MinDevFeeInWei,
+        uint256 _Id
+    ) external onlyDev {
+        LiqLockAddress = _LiqLockAddress;
+        DevFeePercentage = _DevFeePercentage;
+        MinDevFeeInWei = _MinDevFeeInWei;
+        Id = _Id;
     }
 
-    function setSafuDevFeesExempted(bool _safuDevFeesExempted)
+    function setDevFeesExempted(bool _DevFeesExempted)
     external
-    onlySafuDev
+    onlyDev
     {
-        safuDevFeesExempted = _safuDevFeesExempted;
+        DevFeesExempted = _DevFeesExempted;
     }
 
     function setOnlyWhitelistedAddressesAllowed(bool _onlyWhitelistedAddressesAllowed)
     external
-    onlyPresaleCreatorOrSafuFactory
+    onlyPresaleCreatorOrFactory
     {
         onlyWhitelistedAddressesAllowed = _onlyWhitelistedAddressesAllowed;
     }
 
     function addwhitelistedAddresses(address[] calldata _whitelistedAddresses)
     external
-    onlyPresaleCreatorOrSafuFactory
+    onlyPresaleCreatorOrFactory
     {
         onlyWhitelistedAddressesAllowed = _whitelistedAddresses.length > 0;
         for (uint256 i = 0; i < _whitelistedAddresses.length; i++) {
@@ -308,16 +308,16 @@ contract SafuInvestmentsPresale {
         uniLiquidityAdded = true;
 
         uint256 finalTotalCollectedWei = totalCollectedWei;
-        uint256 safuDevFeeInWei;
-        if (!safuDevFeesExempted) {
-            uint256 pctDevFee = finalTotalCollectedWei.mul(safuDevFeePercentage).div(100);
-            safuDevFeeInWei = pctDevFee > safuMinDevFeeInWei || safuMinDevFeeInWei >= finalTotalCollectedWei
+        uint256 DevFeeInWei;
+        if (!DevFeesExempted) {
+            uint256 pctDevFee = finalTotalCollectedWei.mul(DevFeePercentage).div(100);
+            DevFeeInWei = pctDevFee > MinDevFeeInWei || MinDevFeeInWei >= finalTotalCollectedWei
             ? pctDevFee
-            : safuMinDevFeeInWei;
+            : MinDevFeeInWei;
         }
-        if (safuDevFeeInWei > 0) {
-            finalTotalCollectedWei = finalTotalCollectedWei.sub(safuDevFeeInWei);
-            safuDevAddress.transfer(safuDevFeeInWei);
+        if (DevFeeInWei > 0) {
+            finalTotalCollectedWei = finalTotalCollectedWei.sub(DevFeeInWei);
+            DevAddress.transfer(DevFeeInWei);
         }
 
         uint256 liqPoolEthAmount = finalTotalCollectedWei.mul(uniLiquidityPercentageAllocation).div(100);
@@ -330,7 +330,7 @@ contract SafuInvestmentsPresale {
             liqPoolTokenAmount,
             0,
             0,
-            safuDevAddress,
+            DevAddress,
             block.timestamp.add(15 minutes)
         );
 
@@ -390,10 +390,10 @@ contract SafuInvestmentsPresale {
     }
 
     function cancelAndTransferTokensToPresaleCreator() external {
-        if (!uniLiquidityAdded && presaleCreatorAddress != msg.sender && safuDevAddress != msg.sender) {
+        if (!uniLiquidityAdded && presaleCreatorAddress != msg.sender && DevAddress != msg.sender) {
             revert();
         }
-        if (uniLiquidityAdded && safuDevAddress != msg.sender) {
+        if (uniLiquidityAdded && DevAddress != msg.sender) {
             revert();
         }
 
@@ -415,5 +415,4 @@ contract SafuInvestmentsPresale {
             presaleCreatorAddress.transfer(address(this).balance);
         }
     }
-    
 }
