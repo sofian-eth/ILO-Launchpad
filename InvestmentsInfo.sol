@@ -4,7 +4,7 @@ pragma experimental ABIEncoderV2;
 
 import "./Ownable.sol";
 
-contract SafuInvestmentsInfo is Ownable {
+contract InvestmentsInfo is Ownable {
 
     uint256 private devFeePercentage = 1;
 
@@ -21,8 +21,8 @@ contract SafuInvestmentsInfo is Ownable {
         return presaleAddresses.length;
     }
 
-    function getPresaleAddress(uint256 safuId) external view returns (address) {
-        return presaleAddresses[safuId];
+    function getPresaleAddress(uint256 Id) external view returns (address) {
+        return presaleAddresses[Id];
     }
 
     function getDevFeePercentage() external view returns (uint256) {
