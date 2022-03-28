@@ -3,28 +3,28 @@ pragma solidity 0.6.12;
 pragma experimental ABIEncoderV2;
 
 import "./IERC20.sol";
-import "./SafuInvestmentsPresale.sol";
-import "./SafuInvestmentsInfo.sol";
+import "./InvestmentsPresale.sol";
+import "./InvestmentsInfo.sol";
 
 interface IPancakeFactory {
     function getPair(address tokenA, address tokenB) external view returns (address pair);
 }
 
-contract SafuInvestmentsFactory {
+contract InvestmentsFactory {
     using SafeMath for uint256;
 
-    event PresaleCreated(bytes32 title, uint256 safuId, address creator);
+    event PresaleCreated(bytes32 title, uint256 Id, address creator);
 
     IPancakeFactory private constant PancakeFactory =
     IPancakeFactory(address(0x6725F303b657a9451d8BA641348b6761A6CC7a17));
     address private constant wbnbAddress = address(0x094616F0BdFB0b526bD735Bf66Eca0Ad254ca81F);
 
 
-    SafuInvestmentsInfo public immutable SAFU;
+    InvestmentsInfo public immutable SSS;
     address public owner;
 
-    constructor(address _safuInfoAddress) public {
-        SAFU = SafuInvestmentsInfo(_safuInfoAddress);
+    constructor(address _InfoAddress) public {
+        SSS = InvestmentsInfo(_InfoAddress);
         owner = msg.sender;
     }
 
@@ -80,7 +80,7 @@ contract SafuInvestmentsFactory {
 
 
     function initializePresale(
-        SafuInvestmentsPresale _presale,
+        InvestmentsPresale _presale,
         uint256 _totalTokens,
         uint256 _finalTokenPriceInWei,
         PresaleInfo calldata _info,
@@ -120,7 +120,7 @@ contract SafuInvestmentsFactory {
         PresaleStringInfo calldata _stringInfo) external {
         IERC20 token = IERC20(_info.tokenAddress);
 
-        SafuInvestmentsPresale presale = new SafuInvestmentsPresale(address(this), owner);
+        InvestmentsPresale presale = new InvestmentsPresale(address(this), owner);
 
         address existingPairAddress = PancakeFactory.getPair(address(token), wbnbAddress);
         require(existingPairAddress == address(0)); // token should not be listed in Pancakeswap
@@ -136,11 +136,10 @@ contract SafuInvestmentsFactory {
 
         address pairAddress = uniV2LibPairFor(address(PancakeFactory), address(token), wbnbAddress);
 
-        uint256 safuId = SAFU.addPresaleAddress(address(presale));
+        uint256 Id = SSS.addPresaleAddress(address(presale));
 
-        presale.setSafuInfo(owner, SAFU.getDevFeePercentage(), SAFU.getMinDevFeeInWei(), safuId);
+        presale.setInfo(owner, SSS.getDevFeePercentage(), SSS.getMinDevFeeInWei(), Id);
 
-        emit PresaleCreated(_stringInfo.saleTitle, safuId, msg.sender);
+        emit PresaleCreated(_stringInfo.saleTitle, Id, msg.sender);
     }
-    
 }
