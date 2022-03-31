@@ -26,7 +26,6 @@ contract InvestmentsFactory {
 
     constructor(address _InfoAddress) public {
         SSS = InvestmentsInfo(_InfoAddress);
-        owner = msg.sender;
     }
 
     struct PresaleInfo {
@@ -121,7 +120,7 @@ contract InvestmentsFactory {
         PresaleStringInfo calldata _stringInfo) external {
         IERC20 token = IERC20(_info.tokenAddress);
 
-        InvestmentsPresale presale = new InvestmentsPresale(address(this), owner);
+        InvestmentsPresale presale = new InvestmentsPresale(address(this), SSS.owner());
 
         address existingPairAddress = PancakeFactory.getPair(address(token), wbnbAddress);
         require(existingPairAddress == address(0)); // token should not be listed in Pancakeswap
