@@ -5,6 +5,7 @@ pragma experimental ABIEncoderV2;
 import "./IERC20.sol";
 import "./InvestmentsPresale.sol";
 import "./InvestmentsInfo.sol";
+import "./InvestmentsLiquidityLock.sol";
 
 interface IPancakeFactory {
     function getPair(address tokenA, address tokenB) external view returns (address pair);
@@ -136,9 +137,15 @@ contract InvestmentsFactory {
 
         address pairAddress = uniV2LibPairFor(address(PancakeFactory), address(token), wbnbAddress);
 
+        InvestmentsLiquidityLock liquidityLock = new InvestmentsLiquidityLock(
+                IERC20(pairAddress),
+                msg.sender,
+                _uniInfo.liquidityAddingTime + (_uniInfo.lpTokensLockDurationInDays * 1 days)
+            );
+
         uint256 Id = SSS.addPresaleAddress(address(presale));
 
-        presale.setInfo(owner, SSS.getDevFeePercentage(), SSS.getMinDevFeeInWei(), Id);
+        presale.setInfo(address(liquidityLock), SSS.getDevFeePercentage(), SSS.getMinDevFeeInWei(), Id);
 
         emit PresaleCreated(_stringInfo.saleTitle, Id, msg.sender);
     }
