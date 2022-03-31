@@ -18,7 +18,7 @@ contract InvestmentsFactory {
 
     IPancakeFactory private constant PancakeFactory =
     IPancakeFactory(address(0x6725F303b657a9451d8BA641348b6761A6CC7a17));
-    address private constant wbnbAddress = address(0x094616F0BdFB0b526bD735Bf66Eca0Ad254ca81F);
+    address private constant wbnbAddress = address(0xae13d989daC2f0dEbFf460aC112a837C89BAa7cd);
 
 
     InvestmentsInfo public immutable SSS;
