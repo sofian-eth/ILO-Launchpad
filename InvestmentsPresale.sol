@@ -149,8 +149,9 @@ contract InvestmentsPresale {
         uint256 _maxInvestInWei,
         uint256 _minInvestInWei,
         uint256 _openTime,
-        uint256 _closeTime
-    ) external onlyFactory {
+        uint256 _closeTime,
+        uint256 _uniLiquidityAddingTime
+    ) external onlyPresaleCreatorOrFactory {
         require(_totalTokens > 0);
         require(_tokenPriceInWei > 0);
         require(_openTime > 0);
@@ -165,6 +166,7 @@ contract InvestmentsPresale {
         require(_minInvestInWei <= _maxInvestInWei);
         // Open time >= close time
         require(_openTime < _closeTime);
+        require(_uniLiquidityAddingTime >= _closeTime);
 
         totalTokens = _totalTokens;
         tokensLeft = _totalTokens;
@@ -175,6 +177,7 @@ contract InvestmentsPresale {
         minInvestInWei = _minInvestInWei;
         openTime = _openTime;
         closeTime = _closeTime;
+        uniLiquidityAddingTime = _uniLiquidityAddingTime;
     }
 
     function setUniswapInfo(
