@@ -330,7 +330,7 @@ contract InvestmentsPresale {
             liqPoolTokenAmount,
             0,
             0,
-            DevAddress,
+            LiqLockAddress,
             block.timestamp.add(15 minutes)
         );
 
