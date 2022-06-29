@@ -265,7 +265,7 @@ contract InvestmentsPresale {
         uniLiquidityAddingTime = _uniLiquidityAddingTime;
         unsoldTokensDumpAddress = _unsoldTokensDumpAddress;
         uniLPTokensLockDurationInDays = _uniLPTokensLockDurationInDays;
-        liqlockaddy.updateReleaseTime(_uniLPTokensLockDurationInDays);
+        liqlockaddy.updateReleaseTimePresale(_uniLPTokensLockDurationInDays);
         uniLiquidityPercentageAllocation = _uniLiquidityPercentageAllocation;
         saleTitle = _saleTitle;
         linkTelegram = _linkTelegram;
