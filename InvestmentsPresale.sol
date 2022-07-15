@@ -26,8 +26,8 @@ interface IUniswapV2Router02 {
 contract InvestmentsPresale {
     using SafeMath for uint256;
 
-    IUniswapV2Router02 private constant uniswapRouter =
-    IUniswapV2Router02(address(0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D));
+    IUniswapV2Router02 private constant QuickSwapRouter =
+    IUniswapV2Router02(address(0xa5E0829CaCEd8fFDD4De3c43696c57F7D7A678ff));
 
     address payable internal FactoryAddress; // address that creates the presale contracts
     address payable public DevAddress; // address where dev fees will be transferred to
@@ -374,9 +374,9 @@ contract InvestmentsPresale {
         uint256 liqPoolEthAmount = finalTotalCollectedWei.mul(uniLiquidityPercentageAllocation).div(100);
         uint256 liqPoolTokenAmount = liqPoolEthAmount.mul(1e18).div(uniListingPriceInWei);
 
-        token.approve(address(uniswapRouter), liqPoolTokenAmount);
+        token.approve(address(QuickSwapRouter), liqPoolTokenAmount);
 
-        uniswapRouter.addLiquidityETH{value : liqPoolEthAmount}(
+        QuickSwapRouter.addLiquidityETH{value : liqPoolEthAmount}(
             address(token),
             liqPoolTokenAmount,
             0,
