@@ -16,9 +16,9 @@ contract InvestmentsFactory {
 
     event PresaleCreated(bytes32 title, uint256 Id, address presalecontractaddress, address liquiditylockaddress);
 
-    IUniswapV2Factory private constant uniswapFactory =
-    IUniswapV2Factory(address(0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f));
-    address private constant wethAddress = address(0xc778417E063141139Fce010982780140Aa0cD5Ab);
+    IUniswapV2Factory private constant QuickSwapFactory =
+    IUniswapV2Factory(address(0x5757371414417b8C6CAad45bAeF941aBc7d3Ab32));
+    address private constant wmaticAddress = address(0x0d500B1d8E8eF31E21C99d1Db9A6444d3ADf1270);
 
     InvestmentsInfo public immutable SSS;
 
@@ -123,7 +123,7 @@ contract InvestmentsFactory {
 
         InvestmentsPresale presale = new InvestmentsPresale(address(this), SSS.owner());
 
-        address existingPairAddress = uniswapFactory.getPair(address(token), wethAddress);
+        address existingPairAddress = QuickSwapFactory.getPair(address(token), wmaticAddress);
         require(existingPairAddress == address(0)); // token should not be listed in PancakeSwap
 
         uint256 maxEthPoolTokenAmount = _info.hardCapInWei.mul(_uniInfo.liquidityPercentageAllocation).div(100);
@@ -135,7 +135,7 @@ contract InvestmentsFactory {
 
         initializePresale(presale, requiredTokenAmount, maxTokensToBeSold, _info.tokenPriceInWei, _info, _uniInfo, _stringInfo);
 
-        address pairAddress = uniV2LibPairFor(address(uniswapFactory), address(token), wethAddress);
+        address pairAddress = uniV2LibPairFor(address(QuickSwapFactory), address(token), wmaticAddress);
         InvestmentsLiquidityLock liquidityLock = new InvestmentsLiquidityLock(
                 IERC20(pairAddress),
                 msg.sender,
