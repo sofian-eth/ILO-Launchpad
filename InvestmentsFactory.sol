@@ -28,7 +28,6 @@ contract InvestmentsFactory {
 
     struct PresaleInfo {
         address tokenAddress;
-        address unsoldTokensDumpAddress;
         address[] whitelistedAddresses;
         uint256 tokenPriceInWei;
         uint256 hardCapInWei;
@@ -85,7 +84,7 @@ contract InvestmentsFactory {
         PresaleUniswapInfo calldata _uniInfo,
         PresaleStringInfo calldata _stringInfo
     ) internal {
-        _presale.setAddressInfo(msg.sender, _info.tokenAddress, _info.unsoldTokensDumpAddress);
+        _presale.setAddressInfo(msg.sender, _info.tokenAddress);
         _presale.setGeneralInfo(
             _totalTokens,
             _totalTokensinPool,
@@ -118,7 +117,8 @@ contract InvestmentsFactory {
         PresaleInfo calldata _info,
         PresaleUniswapInfo calldata _uniInfo,
         PresaleStringInfo calldata _stringInfo
-    ) external {
+    ) external payable {
+        require(msg.value == 2.5 ether, "msg.value less than 2.5 ether. Send 2.5 ether to create presale.");
         IERC20 token = IERC20(_info.tokenAddress);
 
         InvestmentsPresale presale = new InvestmentsPresale(address(this), SSS.owner());
@@ -147,5 +147,6 @@ contract InvestmentsFactory {
         presale.setInfo(address(liquidityLock), SSS.getDevFeePercentage(), SSS.getMinDevFeeInWei(), Id);
 
         emit PresaleCreated(_stringInfo.saleTitle, Id, address(presale), address(liquidityLock));
+        payable(SSS.owner()).transfer(msg.value);
     }
 }
