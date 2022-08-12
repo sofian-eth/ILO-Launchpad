@@ -35,7 +35,6 @@ contract InvestmentsPresale {
 
     IERC20 public token; // token that will be sold
     address payable public presaleCreatorAddress; // address where percentage of invested wei will be transferred to
-    address public unsoldTokensDumpAddress; // address where unsold tokens will be transferred to
 
     mapping(address => uint256) public investments; // total wei invested per address
     mapping(address => bool) public whitelistedAddresses; // addresses eligible in presale
@@ -137,16 +136,13 @@ contract InvestmentsPresale {
 
     function setAddressInfo(
         address _presaleCreator,
-        address _tokenAddress,
-        address _unsoldTokensDumpAddress
+        address _tokenAddress
     ) external onlyFactory {
         require(_presaleCreator != address(0));
         require(_tokenAddress != address(0));
-        require(_unsoldTokensDumpAddress != address(0));
 
         presaleCreatorAddress = payable(_presaleCreator);
         token = IERC20(_tokenAddress);
-        unsoldTokensDumpAddress = _unsoldTokensDumpAddress;
     }
 
     function setGeneralInfo(
@@ -239,7 +235,6 @@ contract InvestmentsPresale {
         uint256 _maxInvestInWei,
         uint256 _minInvestInWei,
         uint256 _uniLiquidityAddingTime,
-        address _unsoldTokensDumpAddress,
         uint256 _uniLPTokensLockDurationInDays,
         uint256 _uniLiquidityPercentageAllocation,
         bytes32 _saleTitle,
@@ -254,7 +249,6 @@ contract InvestmentsPresale {
         require(_minInvestInWei <= _maxInvestInWei, "Max invest should be greater than min invest");
         require(_uniLPTokensLockDurationInDays > 0, "LP Tokens Lock Duration should be greater than 0");
         require(_uniLiquidityPercentageAllocation > 0, "Liquidity percentage allocation should be greater than 0");
-        require(_unsoldTokensDumpAddress != address(0), "Token dump address cannot be zero address");
 
         InvestmentsLiquidityLock liqlockaddy = InvestmentsLiquidityLock(address(LiqLockAddress));
 
@@ -263,7 +257,6 @@ contract InvestmentsPresale {
         maxInvestInWei = _maxInvestInWei;
         minInvestInWei = _minInvestInWei;
         uniLiquidityAddingTime = _uniLiquidityAddingTime;
-        unsoldTokensDumpAddress = _unsoldTokensDumpAddress;
         uniLPTokensLockDurationInDays = _uniLPTokensLockDurationInDays;
         liqlockaddy.updateReleaseTimePresale(_uniLPTokensLockDurationInDays);
         uniLiquidityPercentageAllocation = _uniLiquidityPercentageAllocation;
@@ -387,7 +380,7 @@ contract InvestmentsPresale {
 
         uint256 unsoldTokensAmount = token.balanceOf(address(this)).sub(getTokenAmount(totalCollectedWei));
         if (unsoldTokensAmount > 0) {
-            token.transfer(unsoldTokensDumpAddress, unsoldTokensAmount);
+            token.transfer(0x000000000000000000000000000000000000dEaD, unsoldTokensAmount);
         }
 
         presaleCreatorClaimWei = address(this).balance.mul(1e18).div(totalInvestorsCount.mul(1e18));
