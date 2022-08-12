@@ -79,7 +79,7 @@ contract TokenTimelock {
      * @notice Transfers tokens held by timelock to beneficiary.
      */
     function release() public virtual {
-        // solhint-disable-next-line not-rely-on-time
+        // solhint-disable-next-line not-rely-on-time 
         require(block.timestamp >= _releaseTime, "TokenTimelock: current time is before release time");
 
         uint256 amount = _token.balanceOf(address(this));
