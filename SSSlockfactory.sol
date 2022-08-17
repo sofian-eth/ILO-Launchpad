@@ -37,9 +37,10 @@ contract SSSlockfactory is Ownable{
         
         SSSlock tlock = new SSSlock(IERC20(_info.tokenAddress), msg.sender, block.timestamp + _info.totaldays * 1 days);
 
-        addlockAddress(address(tlock));
-
         token.transferFrom(msg.sender, address(tlock), _info.quantity);
+        
+        addlockAddress(address(tlock));
+        
         payable(owner()).transfer(msg.value);
     }
 
