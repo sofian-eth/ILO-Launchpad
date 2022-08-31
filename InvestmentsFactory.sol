@@ -118,7 +118,7 @@ contract InvestmentsFactory {
         PresaleUniswapInfo calldata _uniInfo,
         PresaleStringInfo calldata _stringInfo
     ) external payable {
-        require(msg.value == 2.5 ether, "msg.value less than 2.5 ether. Send 2.5 ether to create presale.");
+        require(msg.value == 2.5 ether, "msg.value less than 2.5 BNB. Send 2.5 BNB to create presale.");
         IERC20 token = IERC20(_info.tokenAddress);
 
         InvestmentsPresale presale = new InvestmentsPresale(address(this), SSS.owner());
@@ -144,7 +144,7 @@ contract InvestmentsFactory {
             );
 
         uint256 Id = SSS.addPresaleAddress(address(presale));
-        presale.setInfo(address(liquidityLock), SSS.getDevFeePercentage(), SSS.getMinDevFeeInWei(), Id);
+        presale.setInfo(address(liquidityLock), Id);
 
         emit PresaleCreated(_stringInfo.saleTitle, Id, address(presale), address(liquidityLock));
         payable(SSS.owner()).transfer(msg.value);
