@@ -6,9 +6,9 @@ import "./Ownable.sol";
 
 contract InvestmentsInfo is Ownable {
 
-    uint256 private devFeePercentage = 1;
+    //uint256 private devFeePercentage = 1;
 
-    uint256 private minDevFeeInWei = 1 ether;
+    //uint256 private minDevFeeInWei = 1 ether;
 
     address[] private presaleAddresses;
 
@@ -25,7 +25,7 @@ contract InvestmentsInfo is Ownable {
         return presaleAddresses[Id];
     }
 
-    function getDevFeePercentage() external view returns (uint256) {
+    /*function getDevFeePercentage() external view returns (uint256) {
         return devFeePercentage;
     }
 
@@ -39,5 +39,5 @@ contract InvestmentsInfo is Ownable {
 
     function setMinDevFeeInWei(uint256 _minDevFeeInWei) external onlyOwner {
         minDevFeeInWei = _minDevFeeInWei;
-    }
+    }*/
 }
