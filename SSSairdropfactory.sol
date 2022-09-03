@@ -33,7 +33,7 @@ contract SSSairdropfactory is Ownable{
         require(msg.value == 1 ether, "Not sufficient msg value. Please send 1 BNB");
         IERC20 token = IERC20(_airdropinfo.tokenAddress);
         
-        SSSairdrop airdrop = new SSSairdrop(token, msg.sender, _airdropinfo.distributionTimeUnix);
+        SSSairdrop airdrop = new SSSairdrop(_airdropinfo.tokenAddress, msg.sender, _airdropinfo.distributionTimeUnix);
 
         addairdropAddress(address(airdrop));
 
