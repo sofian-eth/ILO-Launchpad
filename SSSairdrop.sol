@@ -16,12 +16,12 @@ contract SSSairdrop{
 
     IERC20 private token;
 
-    constructor (IERC20 _token, address _airdropCreator, uint256 _distributionTime) public {
+    constructor (address _token, address _airdropCreator, uint256 _distributionTime) public {
         require(_distributionTime > block.timestamp, "Error: distibution time is before current time");
-        token = _token;
+        token = IERC20(_token);
         airdropCreator = _airdropCreator;
         totalTokens = token.balanceOf(address(this));
-        tokenAddress = address(_token);
+        tokenAddress = _token;
         distributionTime = _distributionTime;
     }
 
