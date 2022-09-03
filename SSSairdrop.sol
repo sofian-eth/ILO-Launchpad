@@ -10,7 +10,6 @@ contract SSSairdrop{
 
     address public airdropCreator;
     uint256 public totalParticipants;
-    uint256 public totalTokens;
     address public tokenAddress;
     uint256 public distributionTime;
 
@@ -20,7 +19,6 @@ contract SSSairdrop{
         require(_distributionTime > block.timestamp, "Error: distibution time is before current time");
         token = IERC20(_token);
         airdropCreator = _airdropCreator;
-        totalTokens = token.balanceOf(address(this));
         tokenAddress = _token;
         distributionTime = _distributionTime;
     }
