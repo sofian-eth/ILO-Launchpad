@@ -311,8 +311,8 @@ contract InvestmentsPresale {
         require(tokensLeft > 0);
         require(msg.value <= tokensLeft.mul(tokenPriceInWei));
         uint256 totalInvestmentInWei = investments[msg.sender].add(msg.value);
-        require(totalInvestmentInWei >= minInvestInWei || totalCollectedWei >= hardCapInWei.sub(1 ether), "Min investment not reached");
-        require(maxInvestInWei == 0 || totalInvestmentInWei <= maxInvestInWei, "Max investment reached");
+        require(totalInvestmentInWei >= minInvestInWei, "Min investment not reached");
+        require(totalInvestmentInWei <= maxInvestInWei, "Max investment reached");
 
         if (investments[msg.sender] == 0) {
             totalInvestorsCount = totalInvestorsCount.add(1);
