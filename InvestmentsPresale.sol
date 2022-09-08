@@ -219,13 +219,13 @@ contract InvestmentsPresale {
 
     function setInfo(
         address _LiqLockAddress,
-        uint256 _DevFeePercentage,
-        uint256 _MinDevFeeInWei,
+        //uint256 _DevFeePercentage,
+        //uint256 _MinDevFeeInWei,
         uint256 _Id
     ) external onlyDev {
         LiqLockAddress = _LiqLockAddress;
-        DevFeePercentage = _DevFeePercentage;
-        MinDevFeeInWei = _MinDevFeeInWei;
+        //DevFeePercentage = _DevFeePercentage;
+        //MinDevFeeInWei = _MinDevFeeInWei;
         Id = _Id;
     }
 
@@ -267,12 +267,12 @@ contract InvestmentsPresale {
         linkWebsite = _linkWebsite;
     }
 
-    function setDevFeesExempted(bool _DevFeesExempted)
+    /*function setDevFeesExempted(bool _DevFeesExempted)
     external
     onlyDev
     {
         DevFeesExempted = _DevFeesExempted;
-    }
+    }*/
 
     function setOnlyWhitelistedAddressesAllowed(bool _onlyWhitelistedAddressesAllowed)
     external
@@ -311,8 +311,8 @@ contract InvestmentsPresale {
         require(tokensLeft > 0);
         require(msg.value <= tokensLeft.mul(tokenPriceInWei));
         uint256 totalInvestmentInWei = investments[msg.sender].add(msg.value);
-        require(totalInvestmentInWei >= minInvestInWei || totalCollectedWei >= hardCapInWei.sub(1 ether), "Min investment not reached");
-        require(maxInvestInWei == 0 || totalInvestmentInWei <= maxInvestInWei, "Max investment reached");
+        require(totalInvestmentInWei >= minInvestInWei, "Min investment not reached");
+        require(totalInvestmentInWei <= maxInvestInWei, "Max investment reached");
 
         if (investments[msg.sender] == 0) {
             totalInvestorsCount = totalInvestorsCount.add(1);
@@ -353,8 +353,8 @@ contract InvestmentsPresale {
         uniLiquidityAdded = true;
 
         uint256 finalTotalCollectedWei = totalCollectedWei;
-        uint256 DevFeeInWei;
-        if (!DevFeesExempted) {
+        // uint256 DevFeeInWei;
+        /*if (!DevFeesExempted) {
             uint256 pctDevFee = finalTotalCollectedWei.mul(DevFeePercentage).div(100);
             DevFeeInWei = MinDevFeeInWei > pctDevFee ? pctDevFee : MinDevFeeInWei;
         }
@@ -362,7 +362,7 @@ contract InvestmentsPresale {
         if (DevFeeInWei > 0) {
             finalTotalCollectedWei = finalTotalCollectedWei.sub(DevFeeInWei);
             DevAddress.transfer(DevFeeInWei);
-        }
+        }*/
 
         uint256 liqPoolEthAmount = finalTotalCollectedWei.mul(uniLiquidityPercentageAllocation).div(100);
         uint256 liqPoolTokenAmount = liqPoolEthAmount.mul(1e18).div(uniListingPriceInWei);
