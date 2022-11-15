@@ -3,9 +3,11 @@
 pragma solidity ^0.6.0;
 
 import "./SafeERC20.sol";
+import "./SafeMath.sol";
 
 contract SSSTimelock {
     using SafeERC20 for IERC20;
+    using SafeMath for uint256;
 
     // ERC20 basic token contract being held
     IERC20 private _token;
@@ -63,9 +65,22 @@ contract SSSTimelock {
         _token.safeTransfer(_beneficiary, amount);
     }
     
-     function updateReleaseTime(uint _days) public OnlyBeneficiary {
+    function updateReleaseTime(uint _days) public OnlyBeneficiary {
         // require(msg.sender == _beneficiary, "Only the beneficiary can update the release time");
         require(_days > 0, "Number of days need to be greater than 0");
         _releaseTime = _releaseTime + (_days * 1 days);
+    }
+
+    function checkStatus() public view returns (bool) {
+        if(block.timestamp > _releaseTime) {
+            return true;
+        }
+        else {
+            return false;
+        }
+    }
+
+    function tokenBalance() public view returns (uint256) {
+        return _token.balanceOf(address(this)).div(1e18);
     }
 }
