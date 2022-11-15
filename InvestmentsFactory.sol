@@ -14,7 +14,7 @@ interface IUniswapV2Factory {
 contract InvestmentsFactory {
     using SafeMath for uint256;
 
-    event PresaleCreated(bytes32 title, uint256 Id, address presalecontractaddress, address liquiditylockaddress);
+    event PresaleCreated(uint256 Id, address presalecontractaddress, address liquiditylockaddress);
 
     IUniswapV2Factory private constant QuickSwapFactory =
     IUniswapV2Factory(address(0x5757371414417b8C6CAad45bAeF941aBc7d3Ab32));
@@ -28,8 +28,7 @@ contract InvestmentsFactory {
 
     struct PresaleInfo {
         address tokenAddress;
-        address unsoldTokensDumpAddress;
-        address[] whitelistedAddresses;
+        //address[] whitelistedAddresses;
         uint256 tokenPriceInWei;
         uint256 hardCapInWei;
         uint256 softCapInWei;
@@ -44,14 +43,6 @@ contract InvestmentsFactory {
         uint256 liquidityAddingTime;
         uint256 lpTokensLockDurationInDays;
         uint256 liquidityPercentageAllocation;
-    }
-
-    struct PresaleStringInfo {
-        bytes32 saleTitle;
-        bytes32 linkTelegram;
-        bytes32 linkDiscord;
-        bytes32 linkTwitter;
-        bytes32 linkWebsite;
     }
 
     // copied from https://github.com/Uniswap/uniswap-v2-periphery/blob/master/contracts/libraries/UniswapV2Library.sol
@@ -82,10 +73,9 @@ contract InvestmentsFactory {
         uint256 _totalTokens,
         uint256 _finalTokenPriceInWei,
         PresaleInfo calldata _info,
-        PresaleUniswapInfo calldata _uniInfo,
-        PresaleStringInfo calldata _stringInfo
+        PresaleUniswapInfo calldata _uniInfo
     ) internal {
-        _presale.setAddressInfo(msg.sender, _info.tokenAddress, _info.unsoldTokensDumpAddress);
+        _presale.setAddressInfo(msg.sender, _info.tokenAddress);
         _presale.setGeneralInfo(
             _totalTokens,
             _totalTokensinPool,
@@ -103,22 +93,16 @@ contract InvestmentsFactory {
             _uniInfo.lpTokensLockDurationInDays,
             _uniInfo.liquidityPercentageAllocation
         );
-        _presale.setStringInfo(
-            _stringInfo.saleTitle,
-            _stringInfo.linkTelegram,
-            _stringInfo.linkDiscord,
-            _stringInfo.linkTwitter,
-            _stringInfo.linkWebsite
-        );
 
-        _presale.addwhitelistedAddresses(_info.whitelistedAddresses);
+        //_presale.addwhitelistedAddresses(_info.whitelistedAddresses);
     }
 
     function createPresale(
         PresaleInfo calldata _info,
-        PresaleUniswapInfo calldata _uniInfo,
-        PresaleStringInfo calldata _stringInfo
-    ) external {
+        PresaleUniswapInfo calldata _uniInfo
+    ) external //payable 
+    {
+        //require(msg.value == 0.01 ether, "msg.value less than 2.5 BNB. Send 2.5 BNB to create presale.");
         IERC20 token = IERC20(_info.tokenAddress);
 
         InvestmentsPresale presale = new InvestmentsPresale(address(this), SSS.owner());
@@ -133,7 +117,7 @@ contract InvestmentsFactory {
         uint256 requiredTokenAmount = maxLiqPoolTokenAmount.add(maxTokensToBeSold);
         token.transferFrom(msg.sender, address(presale), requiredTokenAmount);
 
-        initializePresale(presale, requiredTokenAmount, maxTokensToBeSold, _info.tokenPriceInWei, _info, _uniInfo, _stringInfo);
+        initializePresale(presale, requiredTokenAmount, maxTokensToBeSold, _info.tokenPriceInWei, _info, _uniInfo);
 
         address pairAddress = uniV2LibPairFor(address(QuickSwapFactory), address(token), wmaticAddress);
         InvestmentsLiquidityLock liquidityLock = new InvestmentsLiquidityLock(
@@ -144,8 +128,9 @@ contract InvestmentsFactory {
             );
 
         uint256 Id = SSS.addPresaleAddress(address(presale));
-        presale.setInfo(address(liquidityLock), SSS.getDevFeePercentage(), SSS.getMinDevFeeInWei(), Id);
+        presale.setInfo(address(liquidityLock), Id);
 
-        emit PresaleCreated(_stringInfo.saleTitle, Id, address(presale), address(liquidityLock));
+        emit PresaleCreated(Id, address(presale), address(liquidityLock));
+        //payable(SSS.owner()).transfer(msg.value);
     }
 }
