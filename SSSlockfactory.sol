@@ -12,9 +12,11 @@ contract SSSlockfactory is Ownable{
     struct info {
         address tokenAddress;
         address beneficiary;
-        uint256 totaldays;
+        uint256 unlockTime;
         uint256 quantity;
     }
+
+    event lockCreated(address _lockCreator, address _lockAddress);
 
     address[] private lockAddresses;
 
@@ -31,17 +33,18 @@ contract SSSlockfactory is Ownable{
         return lockAddresses[Id];
     }
 
-    function createLock(info calldata _info) external payable{
-        require(msg.value == 1 ether, "Not sufficient msg value. Please send 1 BNB");
-        IERC20 token = IERC20(_info.tokenAddress);
+    function createLock(info calldata _infoo) external //payable
+    {
+        //require(msg.value == 1 ether, "Not sufficient msg value. Please send 1 BNB");
+        IERC20 token = IERC20(_infoo.tokenAddress);
         
-        SSSlock tlock = new SSSlock(IERC20(_info.tokenAddress), msg.sender, block.timestamp + _info.totaldays * 1 days);
+        SSSlock tlock = new SSSlock(token, msg.sender, _infoo.unlockTime);
 
-        token.transferFrom(msg.sender, address(tlock), _info.quantity);
-        
         addlockAddress(address(tlock));
-        
-        payable(owner()).transfer(msg.value);
+
+        token.transferFrom(msg.sender, address(tlock), _infoo.quantity);
+        //payable(owner()).transfer(msg.value);
+        emit lockCreated(msg.sender, address(tlock));
     }
 
 }
