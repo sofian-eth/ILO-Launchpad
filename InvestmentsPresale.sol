@@ -37,7 +37,7 @@ contract InvestmentsPresale {
     address payable public presaleCreatorAddress; // address where percentage of invested wei will be transferred to
 
     mapping(address => uint256) public investments; // total wei invested per address
-    mapping(address => bool) public whitelistedAddresses; // addresses eligible in presale
+    //mapping(address => bool) public whitelistedAddresses; // addresses eligible in presale
     mapping(address => bool) public claimed; // if true, it means investor already claimed the tokens or got a refund
 
     uint256 private DevFeePercentage; // dev fee to support the development of Investments
@@ -63,7 +63,7 @@ contract InvestmentsPresale {
     uint256 public uniLiquidityPercentageAllocation; // how many percentage of the total invested wei that will be added as liquidity
 
     bool public uniLiquidityAdded = false; // if true, liquidity is added in Uniswap and lp tokens are locked
-    bool public onlyWhitelistedAddressesAllowed = true; // if true, only whitelisted addresses can invest
+    //bool public onlyWhitelistedAddressesAllowed = true; // if true, only whitelisted addresses can invest
     bool public DevFeesExempted = false; // if true, presale will be exempted from dev fees
     bool public presaleCancelled = false; // if true, investing will not be allowed, investors can withdraw, presale creator can withdraw their tokens
 
@@ -110,7 +110,7 @@ contract InvestmentsPresale {
         require(presaleCreatorAddress == msg.sender, "Not presale creator");
         _;
     }
-
+/*
     modifier whitelistedAddressOnly() {
         require(
             !onlyWhitelistedAddressesAllowed || whitelistedAddresses[msg.sender],
@@ -118,7 +118,7 @@ contract InvestmentsPresale {
         );
         _;
     }
-
+*/
     modifier presaleIsNotCancelled() {
         require(!presaleCancelled, "Cancelled");
         _;
@@ -202,7 +202,7 @@ contract InvestmentsPresale {
         uniLPTokensLockDurationInDays = _uniLPTokensLockDurationInDays;
         uniLiquidityPercentageAllocation = _uniLiquidityPercentageAllocation;
     }
-
+/*
     function setStringInfo(
         bytes32 _saleTitle,
         bytes32 _linkTelegram,
@@ -216,7 +216,7 @@ contract InvestmentsPresale {
         linkTwitter = _linkTwitter;
         linkWebsite = _linkWebsite;
     }
-
+*/
     function setInfo(
         address _LiqLockAddress,
         //uint256 _DevFeePercentage,
@@ -236,12 +236,7 @@ contract InvestmentsPresale {
         uint256 _minInvestInWei,
         uint256 _uniLiquidityAddingTime,
         uint256 _uniLPTokensLockDurationInDays,
-        uint256 _uniLiquidityPercentageAllocation,
-        bytes32 _saleTitle,
-        bytes32 _linkTelegram,
-        bytes32 _linkDiscord,
-        bytes32 _linkTwitter,
-        bytes32 _linkWebsite
+        uint256 _uniLiquidityPercentageAllocation
     ) external onlyPresaleCreator {
         require(block.timestamp < openTime, "Presale has already started");
         require(_closeTime > _openTime, "Close time cannot be less than open time");
@@ -260,11 +255,6 @@ contract InvestmentsPresale {
         uniLPTokensLockDurationInDays = _uniLPTokensLockDurationInDays;
         liqlockaddy.updateReleaseTimePresale(_uniLPTokensLockDurationInDays);
         uniLiquidityPercentageAllocation = _uniLiquidityPercentageAllocation;
-        saleTitle = _saleTitle;
-        linkTelegram = _linkTelegram;
-        linkDiscord = _linkDiscord;
-        linkTwitter = _linkTwitter;
-        linkWebsite = _linkWebsite;
     }
 
     /*function setDevFeesExempted(bool _DevFeesExempted)
@@ -273,7 +263,7 @@ contract InvestmentsPresale {
     {
         DevFeesExempted = _DevFeesExempted;
     }*/
-
+/*
     function setOnlyWhitelistedAddressesAllowed(bool _onlyWhitelistedAddressesAllowed)
     external
     onlyPresaleCreatorOrFactory
@@ -290,7 +280,7 @@ contract InvestmentsPresale {
             whitelistedAddresses[_whitelistedAddresses[i]] = true;
         }
     }
-
+*/
     function getTokenAmount(uint256 _weiAmount)
     internal
     view
@@ -302,7 +292,7 @@ contract InvestmentsPresale {
     function invest()
     public
     payable
-    whitelistedAddressOnly
+    //whitelistedAddressOnly
     presaleIsNotCancelled
     {
         require(block.timestamp >= openTime, "Not yet opened");
@@ -334,7 +324,8 @@ contract InvestmentsPresale {
         require(totalCollectedWei > 0);
         require(!uniLiquidityAdded, "Liquidity already added");
         require(
-            !onlyWhitelistedAddressesAllowed || whitelistedAddresses[msg.sender] || msg.sender == presaleCreatorAddress,
+            //!onlyWhitelistedAddressesAllowed || whitelistedAddresses[msg.sender] || 
+            msg.sender == presaleCreatorAddress,
             "Not whitelisted or not presale creator"
         );
 
@@ -391,7 +382,7 @@ contract InvestmentsPresale {
 
     function claimTokens()
     external
-    whitelistedAddressOnly
+    //whitelistedAddressOnly
     presaleIsNotCancelled
     investorOnly
     notYetClaimedOrRefunded
@@ -412,7 +403,7 @@ contract InvestmentsPresale {
 
     function getRefund()
     external
-    whitelistedAddressOnly
+    //whitelistedAddressOnly
     investorOnly
     notYetClaimedOrRefunded
     {
