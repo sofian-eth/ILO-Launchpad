@@ -83,12 +83,12 @@ contract InvestmentsPresale {
     }
 
     modifier onlyDev() {
-        require(FactoryAddress == msg.sender || DevAddress == msg.sender);
+        require(FactoryAddress == msg.sender || DevAddress == msg.sender, "only dev can call this function");
         _;
     }
 
     modifier onlyFactory() {
-        require(FactoryAddress == msg.sender);
+        require(FactoryAddress == msg.sender, "only factory can call this function");
         _;
     }
 
@@ -132,8 +132,8 @@ contract InvestmentsPresale {
         address _presaleCreator,
         address _tokenAddress
     ) external onlyFactory {
-        require(_presaleCreator != address(0));
-        require(_tokenAddress != address(0));
+        require(_presaleCreator != address(0), "cant be zero address");
+        require(_tokenAddress != address(0), "cant be zero address");
 
         presaleCreatorAddress = payable(_presaleCreator);
         token = IERC20(_tokenAddress);
@@ -150,20 +150,20 @@ contract InvestmentsPresale {
         uint256 _openTime,
         uint256 _closeTime
     ) external onlyFactory {
-        require(_totalTokens > 0);
-        require(_tokenPriceInWei > 0);
-        require(_openTime > 0);
-        require(_closeTime > 0);
-        require(_hardCapInWei > 0);
+        require(_totalTokens > 0, "total tokens should be greater than 0");
+        require(_tokenPriceInWei > 0, "token price should be greater than 0");
+        require(_openTime > 0, "open time should be greater than 0");
+        require(_closeTime > 0, "close time should be greater than 0");
+        require(_hardCapInWei > 0, "hard cap should be greater than 0");
 
         // Hard cap > (token amount * token price)
-        require(_hardCapInWei <= _totalTokens.mul(_tokenPriceInWei));
+        require(_hardCapInWei <= _totalTokens.mul(_tokenPriceInWei), "total tokens * token price should be greater than hard cap");
         // Soft cap > to hard cap
-        require(_softCapInWei <= _hardCapInWei);
+        require(_softCapInWei <= _hardCapInWei, "hard cap should be greater than soft cap");
         //  Min. wei investment > max. wei investment
-        require(_minInvestInWei <= _maxInvestInWei);
+        require(_minInvestInWei <= _maxInvestInWei, "Max Invest should be greater than min invest");
         // Open time >= close time
-        require(_openTime < _closeTime);
+        require(_openTime < _closeTime, "close time to be greater than open time");
 
         totalTokens = _totalTokensinPool;
         tokensLeft = _totalTokens;
@@ -182,14 +182,14 @@ contract InvestmentsPresale {
         uint256 _uniLPTokensLockDurationInDays,
         uint256 _uniLiquidityPercentageAllocation
     ) external onlyFactory {
-        require(_uniListingPriceInWei > 0);
-        require(_uniLiquidityAddingTime > 0);
-        require(_uniLPTokensLockDurationInDays > 0);
-        require(_uniLiquidityPercentageAllocation > 0);
+        require(_uniListingPriceInWei > 0, "listing price should be greater than  0");
+        require(_uniLiquidityAddingTime > 0, "liquidity adding time should be greater or equal to closing time");
+        require(_uniLPTokensLockDurationInDays > 0, "lock duration should be greater than 0");
+        require(_uniLiquidityPercentageAllocation > 0, "liquidity percentage allocation should be greater than 0");
 
-        require(closeTime > 0);
+        require(closeTime > 0, "close time should be greater than 0");
         // Listing time < close time
-        require(_uniLiquidityAddingTime >= closeTime);
+        require(_uniLiquidityAddingTime >= closeTime, "liquidity adding time should be equal or greater than closing time");
 
         uniListingPriceInWei = _uniListingPriceInWei;
         uniLiquidityAddingTime = _uniLiquidityAddingTime;
@@ -292,8 +292,8 @@ contract InvestmentsPresale {
         require(block.timestamp >= openTime, "Not yet opened");
         require(block.timestamp < closeTime, "Closed");
         require(totalCollectedWei < hardCapInWei, "Hard cap reached");
-        require(tokensLeft > 0);
-        require(msg.value <= tokensLeft.mul(tokenPriceInWei));
+        require(tokensLeft > 0, "there are no tokens left");
+        require(msg.value <= tokensLeft.mul(tokenPriceInWei), "cannot facilitate your purchase, investment bigger than tokens available");
         uint256 totalInvestmentInWei = investments[msg.sender].add(msg.value);
         require(totalInvestmentInWei >= minInvestInWei, "Min investment not reached");
         require(totalInvestmentInWei <= maxInvestInWei, "Max investment reached");
@@ -322,7 +322,7 @@ contract InvestmentsPresale {
             "Not whitelisted or not presale creator"
         );
 
-        if (totalCollectedWei >= hardCapInWei.sub(1 ether) && block.timestamp < uniLiquidityAddingTime) {
+        if (totalCollectedWei >= hardCapInWei && block.timestamp < uniLiquidityAddingTime) {
             require(msg.sender == presaleCreatorAddress, "Not presale creator");
         } else if (block.timestamp >= uniLiquidityAddingTime) {
             require(
@@ -410,7 +410,7 @@ contract InvestmentsPresale {
         claimed[msg.sender] = true; // make sure this goes first before transfer to prevent reentrancy
         uint256 investment = investments[msg.sender];
         uint256 presaleBalance =  address(this).balance;
-        require(presaleBalance > 0);
+        require(presaleBalance > 0, "This contract does not have any balance");
 
         if (investment > presaleBalance) {
             investment = presaleBalance;
@@ -445,8 +445,8 @@ contract InvestmentsPresale {
     } */
 
     function collectFundsRaised() onlyPresaleCreator external {
-        require(uniLiquidityAdded);
-        require(!presaleCancelled);
+        require(uniLiquidityAdded, "liquidity not added yet");
+        require(!presaleCancelled, "presale cancelled");
         require(block.timestamp >= presaleCreatorClaimTime, "Wait until presale creator claim time is reached");
 
         if (address(this).balance > 0) {
@@ -457,7 +457,7 @@ contract InvestmentsPresale {
     }
 
     function checkStatus() external view returns (bool) {
-        if(block.timestamp > closeTime || address(this).balance >= hardCapInWei) {
+        if(block.timestamp > closeTime || totalCollectedWei == hardCapInWei) {
             return true;
         }
         else {
