@@ -83,12 +83,12 @@ contract Fairlaunch {
     }
 
     modifier onlyDev() {
-        require(FactoryAddress == msg.sender || DevAddress == msg.sender);
+        require(FactoryAddress == msg.sender || DevAddress == msg.sender, "only dev can call this function");
         _;
     }
 
     modifier onlyFactory() {
-        require(FactoryAddress == msg.sender);
+        require(FactoryAddress == msg.sender, "only factory can call this function");
         _;
     }
 
@@ -132,8 +132,8 @@ contract Fairlaunch {
         address _presaleCreator,
         address _tokenAddress
     ) external onlyFactory {
-        require(_presaleCreator != address(0));
-        require(_tokenAddress != address(0));
+        require(_presaleCreator != address(0), "can't be zero address");
+        require(_tokenAddress != address(0), "can't be zero address");
 
         presaleCreatorAddress = payable(_presaleCreator);
         token = IERC20(_tokenAddress);
@@ -150,20 +150,20 @@ contract Fairlaunch {
         uint256 _openTime,
         uint256 _closeTime
     ) external onlyFactory {
-        require(_totalTokens > 0);
+        require(_totalTokens > 0, "total tokens should be greater than 0");
         //require(_tokenPriceInWei > 0);
-        require(_openTime > 0);
-        require(_closeTime > 0);
+        require(_openTime > 0, "open time should be greater than 0");
+        require(_closeTime > 0, "close time should be greater than 0");
         //require(_hardCapInWei > 0);
 
         // Hard cap > (token amount * token price)
         //require(_hardCapInWei <= _totalTokens.mul(_tokenPriceInWei));
         // Soft cap > to hard cap
-        require(_softCapInWei > 0);
+        require(_softCapInWei > 0, "soft cap should be greater than 0");
         //  Min. wei investment > max. wei investment
         //require(_minInvestInWei <= _maxInvestInWei);
         // Open time >= close time
-        require(_openTime < _closeTime);
+        require(_openTime < _closeTime, "close time should be greater than open time");
 
         totalTokens = _totalTokens;
         tokensforLiquidity = _totalTokensinPool;
@@ -184,10 +184,10 @@ contract Fairlaunch {
     ) external onlyFactory {
         //require(_uniListingPriceInWei > 0);
         //require(_uniLiquidityAddingTime > 0);
-        require(_uniLPTokensLockDurationInDays > 0);
-        require(_uniLiquidityPercentageAllocation > 0);
+        require(_uniLPTokensLockDurationInDays > 0, "lock duration should be greater than 0");
+        require(_uniLiquidityPercentageAllocation > 0, "percentage allocation should be greater than 0");
 
-        require(closeTime > 0);
+        require(closeTime > 0, "close time should be greater than 0");
         // Listing time < close time
         //require(_uniLiquidityAddingTime >= closeTime);
 
@@ -302,7 +302,7 @@ contract Fairlaunch {
     // add liquidity
 
     function addLiquidityAndLockLPTokens() external presaleIsNotCancelled {
-        require(totalCollectedWei > 0);
+        require(totalCollectedWei > 0, "no investment made");
         require(!uniLiquidityAdded, "Liquidity already added");
         require(block.timestamp >= closeTime, "Sale is not closed yet");
         require(totalCollectedWei >= softCapInWei, "Soft cap not reached");
@@ -402,7 +402,7 @@ contract Fairlaunch {
         claimed[msg.sender] = true; // make sure this goes first before transfer to prevent reentrancy
         uint256 investment = investments[msg.sender];
         uint256 presaleBalance =  address(this).balance;
-        require(presaleBalance > 0);
+        require(presaleBalance > 0, "there is no balance in the contract");
 
         if (investment > presaleBalance) {
             investment = presaleBalance;
@@ -437,8 +437,8 @@ contract Fairlaunch {
     } */
 
     function collectFundsRaised() onlyPresaleCreator external {
-        require(uniLiquidityAdded);
-        require(!presaleCancelled);
+        require(uniLiquidityAdded, "liquidity not added yet");
+        require(!presaleCancelled, "presale is cancelled");
         require(block.timestamp >= presaleCreatorClaimTime, "Wait until presale creator claim time is reached");
 
         if (address(this).balance > 0) {
