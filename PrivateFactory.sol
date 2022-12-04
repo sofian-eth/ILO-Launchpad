@@ -18,7 +18,7 @@ contract InvestmentsFactory {
 
     IUniswapV2Factory private constant QuickSwapFactory =
     IUniswapV2Factory(address(0x5757371414417b8C6CAad45bAeF941aBc7d3Ab32));
-    address private constant wmaticAddress = address(0x0d500B1d8E8eF31E21C99d1Db9A6444d3ADf1270);
+    address private constant wmaticAddress = address(0x9c3C9283D3e44854697Cd22D3Faa240Cfb032889);
 
     InvestmentsInfo public immutable SSS;
 
