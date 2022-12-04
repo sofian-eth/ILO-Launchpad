@@ -108,7 +108,7 @@ contract InvestmentsFactory {
         InvestmentsPresale presale = new InvestmentsPresale(address(this), SSS.owner());
 
         address existingPairAddress = PancakeFactory.getPair(address(token), wbnbAddress);
-        require(existingPairAddress == address(0)); // token should not be listed in PancakeSwap
+        require(existingPairAddress == address(0), "Pair already exists"); // token should not be listed in PancakeSwap
 
         uint256 maxEthPoolTokenAmount = _info.hardCapInWei.mul(_uniInfo.liquidityPercentageAllocation).div(100);
         uint256 maxLiqPoolTokenAmount = maxEthPoolTokenAmount.mul(1e18).div(_uniInfo.listingPriceInWei);
