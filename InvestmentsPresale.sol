@@ -37,7 +37,7 @@ contract InvestmentsPresale {
     address payable public presaleCreatorAddress; // address where percentage of invested wei will be transferred to
 
     mapping(address => uint256) public investments; // total wei invested per address
-    mapping(address => bool) public whitelistedAddresses; // addresses eligible in presale
+    //mapping(address => bool) public whitelistedAddresses; // addresses eligible in presale
     mapping(address => bool) public claimed; // if true, it means investor already claimed the tokens or got a refund
 
     uint256 private DevFeePercentage; // dev fee to support the development of Investments
@@ -63,15 +63,9 @@ contract InvestmentsPresale {
     uint256 public uniLiquidityPercentageAllocation; // how many percentage of the total invested wei that will be added as liquidity
 
     bool public uniLiquidityAdded = false; // if true, liquidity is added in Uniswap and lp tokens are locked
-    bool public onlyWhitelistedAddressesAllowed = true; // if true, only whitelisted addresses can invest
+    //bool public onlyWhitelistedAddressesAllowed = true; // if true, only whitelisted addresses can invest
     bool public DevFeesExempted = false; // if true, presale will be exempted from dev fees
     bool public presaleCancelled = false; // if true, investing will not be allowed, investors can withdraw, presale creator can withdraw their tokens
-
-    bytes32 public saleTitle;
-    bytes32 public linkTelegram;
-    bytes32 public linkTwitter;
-    bytes32 public linkDiscord;
-    bytes32 public linkWebsite;
 
     event invested(string investStatus);
     event liquidityAdded(string liquidityStatus);
@@ -89,12 +83,12 @@ contract InvestmentsPresale {
     }
 
     modifier onlyDev() {
-        require(FactoryAddress == msg.sender || DevAddress == msg.sender);
+        require(FactoryAddress == msg.sender || DevAddress == msg.sender, "only Dev can call this function");
         _;
     }
 
     modifier onlyFactory() {
-        require(FactoryAddress == msg.sender);
+        require(FactoryAddress == msg.sender, "only factory can call this function");
         _;
     }
 
@@ -110,7 +104,7 @@ contract InvestmentsPresale {
         require(presaleCreatorAddress == msg.sender, "Not presale creator");
         _;
     }
-
+/*
     modifier whitelistedAddressOnly() {
         require(
             !onlyWhitelistedAddressesAllowed || whitelistedAddresses[msg.sender],
@@ -118,7 +112,7 @@ contract InvestmentsPresale {
         );
         _;
     }
-
+*/
     modifier presaleIsNotCancelled() {
         require(!presaleCancelled, "Cancelled");
         _;
@@ -138,8 +132,8 @@ contract InvestmentsPresale {
         address _presaleCreator,
         address _tokenAddress
     ) external onlyFactory {
-        require(_presaleCreator != address(0));
-        require(_tokenAddress != address(0));
+        require(_presaleCreator != address(0), "Cant be 0 address");
+        require(_tokenAddress != address(0), "Cant be 0 address");
 
         presaleCreatorAddress = payable(_presaleCreator);
         token = IERC20(_tokenAddress);
@@ -156,20 +150,20 @@ contract InvestmentsPresale {
         uint256 _openTime,
         uint256 _closeTime
     ) external onlyFactory {
-        require(_totalTokens > 0);
-        require(_tokenPriceInWei > 0);
-        require(_openTime > 0);
-        require(_closeTime > 0);
-        require(_hardCapInWei > 0);
+        require(_totalTokens > 0, "total tokens should be greater than 0");
+        require(_tokenPriceInWei > 0, "token price should be greater than 0");
+        require(_openTime > 0, "open time should be greater than 0");
+        require(_closeTime > 0, "close time should be greater than 0");
+        require(_hardCapInWei > 0, "hard cap should be greater than 0");
 
         // Hard cap > (token amount * token price)
-        require(_hardCapInWei <= _totalTokens.mul(_tokenPriceInWei));
+        require(_hardCapInWei <= _totalTokens.mul(_tokenPriceInWei), "total tokens * token price should be greater than hard cap");
         // Soft cap > to hard cap
-        require(_softCapInWei <= _hardCapInWei);
+        require(_softCapInWei <= _hardCapInWei, "hard cap should be greater than soft cap");
         //  Min. wei investment > max. wei investment
-        require(_minInvestInWei <= _maxInvestInWei);
+        require(_minInvestInWei <= _maxInvestInWei, "Max Invest should be greater than min invest");
         // Open time >= close time
-        require(_openTime < _closeTime);
+        require(_openTime < _closeTime, "close time to be greater than open time");
 
         totalTokens = _totalTokensinPool;
         tokensLeft = _totalTokens;
@@ -188,21 +182,21 @@ contract InvestmentsPresale {
         uint256 _uniLPTokensLockDurationInDays,
         uint256 _uniLiquidityPercentageAllocation
     ) external onlyFactory {
-        require(_uniListingPriceInWei > 0);
-        require(_uniLiquidityAddingTime > 0);
-        require(_uniLPTokensLockDurationInDays > 0);
-        require(_uniLiquidityPercentageAllocation > 0);
+        require(_uniListingPriceInWei > 0, "listing price should be greater than  0");
+        require(_uniLiquidityAddingTime > 0, "liquidity adding time should be greater or equal to closing time");
+        require(_uniLPTokensLockDurationInDays > 0, "lock duration should be greater than 0");
+        require(_uniLiquidityPercentageAllocation > 0, "liquidity percentage allocation should be greater than 0");
 
-        require(closeTime > 0);
+        require(closeTime > 0, "close time should be greater than 0");
         // Listing time < close time
-        require(_uniLiquidityAddingTime >= closeTime);
+        require(_uniLiquidityAddingTime >= closeTime, "liquidity adding time should be equal or greater than closing time");
 
         uniListingPriceInWei = _uniListingPriceInWei;
         uniLiquidityAddingTime = _uniLiquidityAddingTime;
         uniLPTokensLockDurationInDays = _uniLPTokensLockDurationInDays;
         uniLiquidityPercentageAllocation = _uniLiquidityPercentageAllocation;
     }
-
+/*
     function setStringInfo(
         bytes32 _saleTitle,
         bytes32 _linkTelegram,
@@ -216,13 +210,13 @@ contract InvestmentsPresale {
         linkTwitter = _linkTwitter;
         linkWebsite = _linkWebsite;
     }
-
+*/
     function setInfo(
         address _LiqLockAddress,
         //uint256 _DevFeePercentage,
         //uint256 _MinDevFeeInWei,
         uint256 _Id
-    ) external onlyDev {
+    ) external onlyFactory {
         LiqLockAddress = _LiqLockAddress;
         //DevFeePercentage = _DevFeePercentage;
         //MinDevFeeInWei = _MinDevFeeInWei;
@@ -236,12 +230,7 @@ contract InvestmentsPresale {
         uint256 _minInvestInWei,
         uint256 _uniLiquidityAddingTime,
         uint256 _uniLPTokensLockDurationInDays,
-        uint256 _uniLiquidityPercentageAllocation,
-        bytes32 _saleTitle,
-        bytes32 _linkTelegram,
-        bytes32 _linkDiscord,
-        bytes32 _linkTwitter,
-        bytes32 _linkWebsite
+        uint256 _uniLiquidityPercentageAllocation
     ) external onlyPresaleCreator {
         require(block.timestamp < openTime, "Presale has already started");
         require(_closeTime > _openTime, "Close time cannot be less than open time");
@@ -260,11 +249,6 @@ contract InvestmentsPresale {
         uniLPTokensLockDurationInDays = _uniLPTokensLockDurationInDays;
         liqlockaddy.updateReleaseTimePresale(_uniLPTokensLockDurationInDays);
         uniLiquidityPercentageAllocation = _uniLiquidityPercentageAllocation;
-        saleTitle = _saleTitle;
-        linkTelegram = _linkTelegram;
-        linkDiscord = _linkDiscord;
-        linkTwitter = _linkTwitter;
-        linkWebsite = _linkWebsite;
     }
 
     /*function setDevFeesExempted(bool _DevFeesExempted)
@@ -273,7 +257,7 @@ contract InvestmentsPresale {
     {
         DevFeesExempted = _DevFeesExempted;
     }*/
-
+/*
     function setOnlyWhitelistedAddressesAllowed(bool _onlyWhitelistedAddressesAllowed)
     external
     onlyPresaleCreatorOrFactory
@@ -290,7 +274,7 @@ contract InvestmentsPresale {
             whitelistedAddresses[_whitelistedAddresses[i]] = true;
         }
     }
-
+*/
     function getTokenAmount(uint256 _weiAmount)
     internal
     view
@@ -302,14 +286,14 @@ contract InvestmentsPresale {
     function invest()
     public
     payable
-    whitelistedAddressOnly
+    //whitelistedAddressOnly
     presaleIsNotCancelled
     {
         require(block.timestamp >= openTime, "Not yet opened");
         require(block.timestamp < closeTime, "Closed");
         require(totalCollectedWei < hardCapInWei, "Hard cap reached");
-        require(tokensLeft > 0);
-        require(msg.value <= tokensLeft.mul(tokenPriceInWei));
+        require(tokensLeft > 0, "there are no tokens left");
+        require(msg.value <= tokensLeft.mul(tokenPriceInWei), "cannot facilitate your purchase, investment bigger than tokens available");
         uint256 totalInvestmentInWei = investments[msg.sender].add(msg.value);
         require(totalInvestmentInWei >= minInvestInWei, "Min investment not reached");
         require(totalInvestmentInWei <= maxInvestInWei, "Max investment reached");
@@ -331,14 +315,15 @@ contract InvestmentsPresale {
     // add liquidity
 
     function addLiquidityAndLockLPTokens() external presaleIsNotCancelled {
-        require(totalCollectedWei > 0);
+        require(totalCollectedWei > 0, "No investment made");
         require(!uniLiquidityAdded, "Liquidity already added");
         require(
-            !onlyWhitelistedAddressesAllowed || whitelistedAddresses[msg.sender] || msg.sender == presaleCreatorAddress,
+            //!onlyWhitelistedAddressesAllowed || whitelistedAddresses[msg.sender] || 
+            msg.sender == presaleCreatorAddress,
             "Not whitelisted or not presale creator"
         );
 
-        if (totalCollectedWei >= hardCapInWei.sub(1 ether) && block.timestamp < uniLiquidityAddingTime) {
+        if (totalCollectedWei >= hardCapInWei && block.timestamp < uniLiquidityAddingTime) {
             require(msg.sender == presaleCreatorAddress, "Not presale creator");
         } else if (block.timestamp >= uniLiquidityAddingTime) {
             require(
@@ -391,7 +376,7 @@ contract InvestmentsPresale {
 
     function claimTokens()
     external
-    whitelistedAddressOnly
+    //whitelistedAddressOnly
     presaleIsNotCancelled
     investorOnly
     notYetClaimedOrRefunded
@@ -412,7 +397,7 @@ contract InvestmentsPresale {
 
     function getRefund()
     external
-    whitelistedAddressOnly
+    //whitelistedAddressOnly
     investorOnly
     notYetClaimedOrRefunded
     {
@@ -426,7 +411,7 @@ contract InvestmentsPresale {
         claimed[msg.sender] = true; // make sure this goes first before transfer to prevent reentrancy
         uint256 investment = investments[msg.sender];
         uint256 presaleBalance =  address(this).balance;
-        require(presaleBalance > 0);
+        require(presaleBalance > 0, "This contract does not have any balance");
 
         if (investment > presaleBalance) {
             investment = presaleBalance;
@@ -461,8 +446,8 @@ contract InvestmentsPresale {
     } */
 
     function collectFundsRaised() onlyPresaleCreator external {
-        require(uniLiquidityAdded);
-        require(!presaleCancelled);
+        require(uniLiquidityAdded, "liquidity not added yet");
+        require(!presaleCancelled, "presale cancelled");
         require(block.timestamp >= presaleCreatorClaimTime, "Wait until presale creator claim time is reached");
 
         if (address(this).balance > 0) {
@@ -473,7 +458,7 @@ contract InvestmentsPresale {
     }
 
     function checkStatus() external view returns (bool) {
-        if(block.timestamp > closeTime || address(this).balance >= hardCapInWei) {
+        if(block.timestamp > closeTime || totalCollectedWei == hardCapInWei) {
             return true;
         }
         else {
