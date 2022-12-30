@@ -66,12 +66,7 @@ contract InvestmentsPresale {
     //bool public onlyWhitelistedAddressesAllowed = true; // if true, only whitelisted addresses can invest
     bool public DevFeesExempted = false; // if true, presale will be exempted from dev fees
     bool public presaleCancelled = false; // if true, investing will not be allowed, investors can withdraw, presale creator can withdraw their tokens
-
-    bytes32 public saleTitle;
-    bytes32 public linkTelegram;
-    bytes32 public linkTwitter;
-    bytes32 public linkDiscord;
-    bytes32 public linkWebsite;
+    bool public fixedPresale = false; // if true, it will be %age presale
 
     event invested(string investStatus);
     event liquidityAdded(string liquidityStatus);
@@ -89,7 +84,7 @@ contract InvestmentsPresale {
     }
 
     modifier onlyDev() {
-        require(FactoryAddress == msg.sender || DevAddress == msg.sender, "only dev can call this function");
+        require(FactoryAddress == msg.sender || DevAddress == msg.sender, "only Dev can call this function");
         _;
     }
 
@@ -139,7 +134,7 @@ contract InvestmentsPresale {
         address _tokenAddress
     ) external onlyFactory {
         require(_presaleCreator != address(0), "Cant be 0 address");
-        require(_tokenAddress != address(0), "cant be zero address");
+        require(_tokenAddress != address(0), "Cant be 0 address");
 
         presaleCreatorAddress = payable(_presaleCreator);
         token = IERC20(_tokenAddress);
@@ -154,7 +149,8 @@ contract InvestmentsPresale {
         uint256 _maxInvestInWei,
         uint256 _minInvestInWei,
         uint256 _openTime,
-        uint256 _closeTime
+        uint256 _closeTime,
+        bool _fixedPresale
     ) external onlyFactory {
         require(_totalTokens > 0, "total tokens should be greater than 0");
         require(_tokenPriceInWei > 0, "token price should be greater than 0");
@@ -180,6 +176,7 @@ contract InvestmentsPresale {
         minInvestInWei = _minInvestInWei;
         openTime = _openTime;
         closeTime = _closeTime;
+        fixedPresale = _fixedPresale;
     }
 
     function setUniswapInfo(
@@ -188,7 +185,7 @@ contract InvestmentsPresale {
         uint256 _uniLPTokensLockDurationInDays,
         uint256 _uniLiquidityPercentageAllocation
     ) external onlyFactory {
-       require(_uniListingPriceInWei > 0, "listing price should be greater than  0");
+        require(_uniListingPriceInWei > 0, "listing price should be greater than  0");
         require(_uniLiquidityAddingTime > 0, "liquidity adding time should be greater or equal to closing time");
         require(_uniLPTokensLockDurationInDays > 0, "lock duration should be greater than 0");
         require(_uniLiquidityPercentageAllocation > 0, "liquidity percentage allocation should be greater than 0");
@@ -298,7 +295,7 @@ contract InvestmentsPresale {
         require(block.timestamp >= openTime, "Not yet opened");
         require(block.timestamp < closeTime, "Closed");
         require(totalCollectedWei < hardCapInWei, "Hard cap reached");
-        require(tokensLeft > 0, "There are no tokens left");
+        require(tokensLeft > 0, "there are no tokens left");
         require(msg.value <= tokensLeft.mul(tokenPriceInWei), "cannot facilitate your purchase, investment bigger than tokens available");
         uint256 totalInvestmentInWei = investments[msg.sender].add(msg.value);
         require(totalInvestmentInWei >= minInvestInWei, "Min investment not reached");
@@ -354,6 +351,13 @@ contract InvestmentsPresale {
             finalTotalCollectedWei = finalTotalCollectedWei.sub(DevFeeInWei);
             DevAddress.transfer(DevFeeInWei);
         }*/
+
+        if(fixedPresale == false) {
+            //uint256 DevFee;
+            uint256 percentFee = finalTotalCollectedWei.mul(5).div(100);
+            finalTotalCollectedWei = finalTotalCollectedWei.sub(percentFee);
+            DevAddress.transfer(percentFee);
+        }
 
         uint256 liqPoolEthAmount = finalTotalCollectedWei.mul(uniLiquidityPercentageAllocation).div(100);
         uint256 liqPoolTokenAmount = liqPoolEthAmount.mul(1e18).div(uniListingPriceInWei);
