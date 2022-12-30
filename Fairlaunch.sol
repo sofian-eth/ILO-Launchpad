@@ -66,6 +66,7 @@ contract Fairlaunch {
     //bool public onlyWhitelistedAddressesAllowed = true; // if true, only whitelisted addresses can invest
     bool public DevFeesExempted = false; // if true, presale will be exempted from dev fees
     bool public presaleCancelled = false; // if true, investing will not be allowed, investors can withdraw, presale creator can withdraw their tokens
+    bool public fixedPresale = false; // if true, it will be %age presale
 
     event invested(string investStatus);
     event liquidityAdded(string liquidityStatus);
@@ -132,8 +133,8 @@ contract Fairlaunch {
         address _presaleCreator,
         address _tokenAddress
     ) external onlyFactory {
-        require(_presaleCreator != address(0), "cant be zero address");
-        require(_tokenAddress != address(0), "cant be zero address");
+        require(_presaleCreator != address(0), "can't be zero address");
+        require(_tokenAddress != address(0), "can't be zero address");
 
         presaleCreatorAddress = payable(_presaleCreator);
         token = IERC20(_tokenAddress);
@@ -148,7 +149,8 @@ contract Fairlaunch {
         //uint256 _maxInvestInWei,
         //uint256 _minInvestInWei,
         uint256 _openTime,
-        uint256 _closeTime
+        uint256 _closeTime,
+        bool _fixedPresale
     ) external onlyFactory {
         require(_totalTokens > 0, "total tokens should be greater than 0");
         //require(_tokenPriceInWei > 0);
@@ -174,6 +176,7 @@ contract Fairlaunch {
         //minInvestInWei = _minInvestInWei;
         openTime = _openTime;
         closeTime = _closeTime;
+        fixedPresale = _fixedPresale;
     }
 
     function setUniswapInfo(
@@ -324,7 +327,7 @@ contract Fairlaunch {
             revert("Liquidity cannot be added yet");
         }*/
 
-        tokenPriceInWei = totalCollectedWei.div(totalTokens);
+        tokenPriceInWei = totalCollectedWei.mul(1e18).div(totalTokens);
 
         uniLiquidityAdded = true;
 
@@ -339,6 +342,13 @@ contract Fairlaunch {
             finalTotalCollectedWei = finalTotalCollectedWei.sub(DevFeeInWei);
             DevAddress.transfer(DevFeeInWei);
         }*/
+
+        if(fixedPresale == false) {
+            //uint256 DevFee;
+            uint256 percentFee = finalTotalCollectedWei.mul(5).div(100);
+            finalTotalCollectedWei = finalTotalCollectedWei.sub(percentFee);
+            DevAddress.transfer(percentFee);
+        }
 
         uint256 liqPoolEthAmount = finalTotalCollectedWei.mul(uniLiquidityPercentageAllocation).div(100);
         uint256 liqPoolTokenAmount = tokensforLiquidity; //liqPoolEthAmount.mul(1e18).div(uniListingPriceInWei);
@@ -402,7 +412,7 @@ contract Fairlaunch {
         claimed[msg.sender] = true; // make sure this goes first before transfer to prevent reentrancy
         uint256 investment = investments[msg.sender];
         uint256 presaleBalance =  address(this).balance;
-        require(presaleBalance > 0);
+        require(presaleBalance > 0, "there is no balance in the contract");
 
         if (investment > presaleBalance) {
             investment = presaleBalance;
