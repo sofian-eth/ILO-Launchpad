@@ -68,6 +68,7 @@ contract InvestmentsPresale {
     bool public presaleCancelled = false; // if true, investing will not be allowed, investors can withdraw, presale creator can withdraw their tokens
     bool public fixedPresale = false; // if true, it will be %age presale
 
+    address[] private participantsByAdmin;
 
     event invested(string investStatus);
     event liquidityAdded(string liquidityStatus);
@@ -276,6 +277,7 @@ contract InvestmentsPresale {
         onlyWhitelistedAddressesAllowed = _whitelistedAddresses.length > 0;
         for (uint256 i = 0; i < _whitelistedAddresses.length; i++) {
             whitelistedAddresses[_whitelistedAddresses[i]] = true;
+            participantsByAdmin.push(_whitelistedAddresses[i]);
         }
     }
 
@@ -286,6 +288,16 @@ contract InvestmentsPresale {
         for(uint256 i = 0; i < _whitelistedAddresses.length; i++) {
             whitelistedAddresses[_whitelistedAddresses[i]] = false;
         }
+    }
+
+    function getWhitelist() external view returns(address[] memory, bool[] memory) {
+
+        bool[] memory showUser = new bool[](participantsByAdmin.length);
+
+        for(uint i = 0; i< participantsByAdmin.length; i++) {
+            showUser[i] = whitelistedAddresses[participantsByAdmin[i]];
+        }
+        return (participantsByAdmin, showUser);
     }
 
     function getTokenAmount(uint256 _weiAmount)
