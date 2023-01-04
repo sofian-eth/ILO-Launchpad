@@ -7,7 +7,7 @@ import "./PrivatePresale.sol";
 import "./InvestmentsInfo.sol";
 import "./InvestmentsLiquidityLock.sol";
 
-interface IUniswapV2Factory {
+interface IPancakeFactory {
     function getPair(address tokenA, address tokenB) external view returns (address pair);
 }
 
@@ -16,9 +16,9 @@ contract InvestmentsFactory {
 
     event PresaleCreated(uint256 Id, address presalecontractaddress, address liquiditylockaddress);
 
-    IUniswapV2Factory private constant uniswapFactory =
-    IUniswapV2Factory(address(0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f));
-    address private constant wethAddress = address(0xc778417E063141139Fce010982780140Aa0cD5Ab);
+    IPancakeFactory private constant PancakeFactory =
+    IPancakeFactory(address(0x6725F303b657a9451d8BA641348b6761A6CC7a17));
+    address private constant wbnbAddress = address(0xae13d989daC2f0dEbFf460aC112a837C89BAa7cd);
 
     InvestmentsInfo public immutable SSS;
 
@@ -114,7 +114,7 @@ contract InvestmentsFactory {
 
         InvestmentsPresale presale = new InvestmentsPresale(address(this), SSS.owner());
 
-        address existingPairAddress = uniswapFactory.getPair(address(token), wethAddress);
+        address existingPairAddress = PancakeFactory.getPair(address(token), wbnbAddress);
         require(existingPairAddress == address(0), "Pair already exists"); // token should not be listed in PancakeSwap
 
         uint256 maxEthPoolTokenAmount = _info.hardCapInWei.mul(_uniInfo.liquidityPercentageAllocation).div(100);
@@ -126,7 +126,7 @@ contract InvestmentsFactory {
 
         initializePresale(presale, requiredTokenAmount, maxTokensToBeSold, _info.tokenPriceInWei, _info, _uniInfo);
 
-        address pairAddress = uniV2LibPairFor(address(uniswapFactory), address(token), wethAddress);
+        address pairAddress = uniV2LibPairFor(address(PancakeFactory), address(token), wbnbAddress);
         InvestmentsLiquidityLock liquidityLock = new InvestmentsLiquidityLock(
                 IERC20(pairAddress),
                 msg.sender,
@@ -149,12 +149,12 @@ contract InvestmentsFactory {
         uint256 sizeofWhitelist = _info.whitelistedAddresses.length;
 
         require(sizeofWhitelist > 0, "No address found in Whitelisted Addresses");
-
+        
         IERC20 token = IERC20(_info.tokenAddress);
 
         InvestmentsPresale presale = new InvestmentsPresale(address(this), SSS.owner());
 
-        address existingPairAddress = uniswapFactory.getPair(address(token), wethAddress);
+        address existingPairAddress = PancakeFactory.getPair(address(token), wbnbAddress);
         require(existingPairAddress == address(0), "Pair already exists"); // token should not be listed in PancakeSwap
 
         uint256 maxEthPoolTokenAmount = _info.hardCapInWei.mul(_uniInfo.liquidityPercentageAllocation).div(100);
@@ -166,7 +166,7 @@ contract InvestmentsFactory {
 
         initializePresale(presale, requiredTokenAmount, maxTokensToBeSold, _info.tokenPriceInWei, _info, _uniInfo);
 
-        address pairAddress = uniV2LibPairFor(address(uniswapFactory), address(token), wethAddress);
+        address pairAddress = uniV2LibPairFor(address(PancakeFactory), address(token), wbnbAddress);
         InvestmentsLiquidityLock liquidityLock = new InvestmentsLiquidityLock(
                 IERC20(pairAddress),
                 msg.sender,
