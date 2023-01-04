@@ -17,6 +17,7 @@ contract SEprivateairdrop{
     uint256 private verifyQuantity;
 
     address public factoryAddress;
+    bool public airdropped = false;
 
     constructor (address _token, address _airdropCreator, uint256 _distributionTime, uint256 _quantity, address _factory) public {
         require(_distributionTime > block.timestamp, "Error: distibution time is before current time");
@@ -57,6 +58,7 @@ contract SEprivateairdrop{
     function addUsersAndQuantity(address[] calldata userAddresses, uint256[] calldata userQuantity) external factoryOrAirdropCreator {
         //uint256 checkTokens = token.balanceOf(address(this)).div(1e18);
         //uint256 verifyQuantity;
+        require(!airdropped, "Tokens already airdropped, can't add more users");
 
         uint256 addressLength = userAddresses.length;
         uint256 quantityLength = userQuantity.length;
@@ -75,13 +77,35 @@ contract SEprivateairdrop{
 
     }
 
+    function updateUsers(address[] calldata userAddresses) external onlyAirdropCreator {
+        require(!airdropped, "Tokens already airdropped, can't update users");
+
+        for(uint i=0; i < userAddresses.length ; i++) {
+            uint256 tokenCheck = userAndQuantity[userAddresses[i]];
+            verifyQuantity = verifyQuantity.sub(tokenCheck);
+            userAndQuantity[userAddresses[i]] = 0;
+        }
+    }
+
+    function showUsers() external view returns (address[] memory, uint[] memory) {
+        uint[] memory userTokenBalance = new uint[](participantsByAdmin.length);
+
+        for(uint i=0; i<participantsByAdmin.length; i++) {
+            userTokenBalance[i] = userAndQuantity[participantsByAdmin[i]];
+        }
+        return (participantsByAdmin, userTokenBalance);
+    }
+
     function airdropUsers() external onlyAirdropCreator {
         require(block.timestamp > distributionTime, "Distribution time hasn't been reached yet");
+        require(!airdropped, "Tokens already airdropped");
 
-        for(uint256 i=0; i<participantsByAdmin.length;i++) {
-            if(claimed[participantsByAdmin[i]] == false) {
-            claimed[participantsByAdmin[i]] = true; //to avoid reentrancy
-            token.transfer(participantsByAdmin[i], userAndQuantity[participantsByAdmin[i]].mul(1e18));
+        airdropped = true;
+
+        for(uint256 i=0; i<participantsByAdmin.length; i++) {
+            if(claimed[participantsByAdmin[i]] == false && userAndQuantity[participantsByAdmin[i]] > 0) {
+                claimed[participantsByAdmin[i]] = true; //to avoid reentrancy
+                token.transfer(participantsByAdmin[i], userAndQuantity[participantsByAdmin[i]]);
             }
         }
     }
@@ -96,7 +120,7 @@ contract SEprivateairdrop{
     }
 
     function tokens() external view returns (uint256) {
-        return token.balanceOf(address(this)).div(1e18);
+        return checkTokens.div(1e18);
     }
 
     function checkStatus() external view returns (bool) {
