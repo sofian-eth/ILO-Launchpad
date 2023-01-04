@@ -37,9 +37,9 @@ contract SSSairdropfactory is Ownable{
         _airdrop.addUsersAndQuantity(_airdropinfoo.users, _airdropinfoo.userQuantity);
     }
 
-    function createAirdrop(airdropinfo calldata _airdropinfoo) external //payable
+    function createAirdrop(airdropinfo calldata _airdropinfoo) external payable
     {
-        //require(msg.value == 1 ether, "Not sufficient msg value. Please send 1 BNB");
+        require(msg.value == 0.01 ether, "Not sufficient msg value. Please send 0.01 BNB");
         IERC20 token = IERC20(_airdropinfoo.tokenAddress);
         
         SEprivateairdrop airdrop = new SEprivateairdrop(_airdropinfoo.tokenAddress, msg.sender, _airdropinfoo.distributionTimeUnix, _airdropinfoo.quantity, address(this));
