@@ -18,6 +18,8 @@ contract SSSTimelock {
     // timestamp when token release is enabled
     uint256 private _releaseTime;
 
+    bool public unlocked = false;
+
     constructor (IERC20 token, address beneficiary, uint256 releaseTime) public {
         // solhint-disable-next-line not-rely-on-time
         require(releaseTime > block.timestamp, "TokenTimelock: release time is before current time");
@@ -62,6 +64,8 @@ contract SSSTimelock {
         uint256 amount = _token.balanceOf(address(this));
         require(amount > 0, "TokenTimelock: no tokens to release");
 
+        unlocked = true;
+
         _token.safeTransfer(_beneficiary, amount);
     }
     
@@ -81,6 +85,6 @@ contract SSSTimelock {
     }
 
     function tokenBalance() public view returns (uint256) {
-        return _token.balanceOf(address(this)).div(1e18);
+        return _token.balanceOf(address(this));
     }
 }
