@@ -38,7 +38,7 @@ contract SSSlockfactory is Ownable{
         //require(msg.value == 1 ether, "Not sufficient msg value. Please send 1 BNB");
         IERC20 token = IERC20(_infoo.tokenAddress);
         
-        SSSlock tlock = new SSSlock(token, msg.sender, _infoo.unlockTime);
+        SSSlock tlock = new SSSlock(token, _infoo.beneficiary, _infoo.unlockTime);
 
         addlockAddress(address(tlock));
 
@@ -46,5 +46,5 @@ contract SSSlockfactory is Ownable{
         //payable(owner()).transfer(msg.value);
         emit lockCreated(msg.sender, address(tlock));
     }
-
+   
 }
