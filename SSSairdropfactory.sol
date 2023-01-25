@@ -31,16 +31,16 @@ contract SSSairdropfactory is Ownable{
         return airdropAddresses[Id];
     }
 
-    function createAirdrop(airdropinfo calldata _airdropinfo) external //payable
+    function createAirdrop(airdropinfo calldata _airdropinfoo) external //payable
     {
         //require(msg.value == 1 ether, "Not sufficient msg value. Please send 1 BNB");
-        IERC20 token = IERC20(_airdropinfo.tokenAddress);
+        IERC20 token = IERC20(_airdropinfoo.tokenAddress);
         
-        SSSairdrop airdrop = new SSSairdrop(_airdropinfo.tokenAddress, msg.sender, _airdropinfo.distributionTimeUnix, _airdropinfo.quantity);
+        SSSairdrop airdrop = new SSSairdrop(_airdropinfoo.tokenAddress, msg.sender, _airdropinfoo.distributionTimeUnix, _airdropinfoo.quantity);
 
         addairdropAddress(address(airdrop));
 
-        token.transferFrom(msg.sender, address(airdrop), _airdropinfo.quantity);
+        token.transferFrom(msg.sender, address(airdrop), _airdropinfoo.quantity);
         //payable(owner()).transfer(msg.value);
         emit airdropCreated(msg.sender, address(airdrop));
     }
