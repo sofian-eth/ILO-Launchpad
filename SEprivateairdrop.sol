@@ -120,7 +120,7 @@ contract SEprivateairdrop{
     }
 
     function tokens() external view returns (uint256) {
-        return checkTokens.div(1e18);
+        return checkTokens;
     }
 
     function checkStatus() external view returns (bool) {
