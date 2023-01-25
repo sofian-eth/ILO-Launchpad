@@ -4,7 +4,7 @@ pragma experimental ABIEncoderV2;
 
 import "./Ownable.sol";
 
-contract InvestmentsInfo is Ownable {
+contract InvestmentsInfoTST is Ownable {
 
     //uint256 private devFeePercentage = 1;
     //uint256 private minDevFeeInWei = 1 ether;
@@ -22,8 +22,7 @@ contract InvestmentsInfo is Ownable {
     function getPresalesCount() external view returns (uint256) {
         return presaleAddresses.length;
     }
-
-
+ 
     /*function getDevFeePercentage() external view returns (uint256) {
         return devFeePercentage;
     }

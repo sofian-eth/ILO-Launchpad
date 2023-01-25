@@ -3,7 +3,7 @@ pragma solidity 0.6.12;
 pragma experimental ABIEncoderV2;
 
 import "./IERC20.sol";
-import "./InvestmentsPresale.sol";
+import "./Fairlaunch.sol";
 import "./InvestmentsInfo.sol";
 import "./InvestmentsLiquidityLock.sol";
 
@@ -11,7 +11,7 @@ interface IPancakeFactory {
     function getPair(address tokenA, address tokenB) external view returns (address pair);
 }
 
-contract InvestmentsFactoryTST {
+contract FairlaunchFactoryTST {
     using SafeMath for uint256;
 
     event PresaleCreated(uint256 Id, address presalecontractaddress, address liquiditylockaddress);
@@ -28,20 +28,14 @@ contract InvestmentsFactoryTST {
 
     struct PresaleInfo {
         address tokenAddress;
-        //address[] whitelistedAddresses;
-        uint256 tokenPriceInWei;
-        uint256 hardCapInWei;
+        uint256 tokenQuantity;
         uint256 softCapInWei;
-        uint256 maxInvestInWei;
-        uint256 minInvestInWei;
         uint256 openTime;
         uint256 closeTime;
         bool fixedPresale;
     }
 
     struct PresaleUniswapInfo {
-        uint256 listingPriceInWei;
-        uint256 liquidityAddingTime;
         uint256 lpTokensLockDurationInDays;
         uint256 liquidityPercentageAllocation;
     }
@@ -68,35 +62,26 @@ contract InvestmentsFactoryTST {
         );
     }
 
-    function initializePresale(
-        InvestmentsPresaleTST _presale,
-        uint256 _totalTokensinPool,
+    function initializeFairlaunch(
+        FairlaunchTST _flaunch,
         uint256 _totalTokens,
-        uint256 _finalTokenPriceInWei,
+        uint256 _totalTokensinPool,
         PresaleInfo calldata _info,
         PresaleUniswapInfo calldata _uniInfo
     ) internal {
-        _presale.setAddressInfo(msg.sender, _info.tokenAddress);
-        _presale.setGeneralInfo(
+        _flaunch.setAddressInfo(msg.sender, _info.tokenAddress);
+        _flaunch.setGeneralInfo(
             _totalTokens,
             _totalTokensinPool,
-            _finalTokenPriceInWei,
-            _info.hardCapInWei,
             _info.softCapInWei,
-            _info.maxInvestInWei,
-            _info.minInvestInWei,
             _info.openTime,
             _info.closeTime,
             _info.fixedPresale
         );
-        _presale.setUniswapInfo(
-            _uniInfo.listingPriceInWei,
-            _uniInfo.liquidityAddingTime,
+        _flaunch.setUniswapInfo(
             _uniInfo.lpTokensLockDurationInDays,
             _uniInfo.liquidityPercentageAllocation
         );
-
-        //_presale.addwhitelistedAddresses(_info.whitelistedAddresses);
     }
 
     function createPresale(
@@ -107,32 +92,32 @@ contract InvestmentsFactoryTST {
         require(msg.value == 0.01 ether, "msg.value less than 0.01 BNB. Send 0.01 BNB to create presale.");
         IERC20 token = IERC20(_info.tokenAddress);
 
-        InvestmentsPresaleTST presale = new InvestmentsPresaleTST(address(this), SSS.owner());
+        FairlaunchTST flaunch = new FairlaunchTST(address(this), SSS.owner());
 
         address existingPairAddress = PancakeFactory.getPair(address(token), wbnbAddress);
         require(existingPairAddress == address(0), "Pair already exists"); // token should not be listed in PancakeSwap
 
-        uint256 maxEthPoolTokenAmount = _info.hardCapInWei.mul(_uniInfo.liquidityPercentageAllocation).div(100);
-        uint256 maxLiqPoolTokenAmount = maxEthPoolTokenAmount.mul(1e18).div(_uniInfo.listingPriceInWei);
+        //uint256 maxEthPoolTokenAmount = _info.hardCapInWei.mul(_uniInfo.liquidityPercentageAllocation).div(100);
+        //uint256 maxLiqPoolTokenAmount = maxEthPoolTokenAmount.mul(1e18).div(_uniInfo.listingPriceInWei);
 
-        uint256 maxTokensToBeSold = _info.hardCapInWei.mul(1e18).div(_info.tokenPriceInWei);
-        uint256 requiredTokenAmount = maxLiqPoolTokenAmount.add(maxTokensToBeSold);
-        token.transferFrom(msg.sender, address(presale), requiredTokenAmount);
+        uint256 maxTokensToBeSold = _info.tokenQuantity.mul(_uniInfo.liquidityPercentageAllocation).mul(95).div(10000);
+        uint256 requiredTokenAmount = _info.tokenQuantity.add(maxTokensToBeSold);
+        token.transferFrom(msg.sender, address(flaunch), requiredTokenAmount);
 
-        initializePresale(presale, requiredTokenAmount, maxTokensToBeSold, _info.tokenPriceInWei, _info, _uniInfo);
+        initializeFairlaunch(flaunch, _info.tokenQuantity, maxTokensToBeSold, _info, _uniInfo);
 
         address pairAddress = uniV2LibPairFor(address(PancakeFactory), address(token), wbnbAddress);
         InvestmentsLiquidityLockTST liquidityLock = new InvestmentsLiquidityLockTST(
                 IERC20(pairAddress),
                 msg.sender,
-                address(presale),
-                _uniInfo.liquidityAddingTime + (_uniInfo.lpTokensLockDurationInDays * 1 days)
+                address(flaunch),
+                _info.closeTime + (_uniInfo.lpTokensLockDurationInDays * 1 days)
             );
 
-        uint256 Id = SSS.addPresaleAddress(address(presale));
-        presale.setInfo(address(liquidityLock), Id);
+        uint256 Id = SSS.addPresaleAddress(address(flaunch));
+        flaunch.setInfo(address(liquidityLock), Id);
 
-        emit PresaleCreated(Id, address(presale), address(liquidityLock));
+        emit PresaleCreated(Id, address(flaunch), address(liquidityLock));
         payable(SSS.owner()).transfer(msg.value);
     }
 
@@ -143,31 +128,31 @@ contract InvestmentsFactoryTST {
     {
         IERC20 token = IERC20(_info.tokenAddress);
 
-        InvestmentsPresaleTST presale = new InvestmentsPresaleTST(address(this), SSS.owner());
+        FairlaunchTST flaunch = new FairlaunchTST(address(this), SSS.owner());
 
         address existingPairAddress = PancakeFactory.getPair(address(token), wbnbAddress);
         require(existingPairAddress == address(0), "Pair already exists"); // token should not be listed in PancakeSwap
 
-        uint256 maxEthPoolTokenAmount = _info.hardCapInWei.mul(_uniInfo.liquidityPercentageAllocation).div(100);
-        uint256 maxLiqPoolTokenAmount = maxEthPoolTokenAmount.mul(1e18).div(_uniInfo.listingPriceInWei);
+        //uint256 maxEthPoolTokenAmount = _info.hardCapInWei.mul(_uniInfo.liquidityPercentageAllocation).div(100);
+        //uint256 maxLiqPoolTokenAmount = maxEthPoolTokenAmount.mul(1e18).div(_uniInfo.listingPriceInWei);
 
-        uint256 maxTokensToBeSold = _info.hardCapInWei.mul(1e18).div(_info.tokenPriceInWei);
-        uint256 requiredTokenAmount = maxLiqPoolTokenAmount.add(maxTokensToBeSold);
-        token.transferFrom(msg.sender, address(presale), requiredTokenAmount);
+        uint256 maxTokensToBeSold = _info.tokenQuantity.mul(_uniInfo.liquidityPercentageAllocation).mul(95).div(10000);
+        uint256 requiredTokenAmount = _info.tokenQuantity.add(maxTokensToBeSold);
+        token.transferFrom(msg.sender, address(flaunch), requiredTokenAmount);
 
-        initializePresale(presale, requiredTokenAmount, maxTokensToBeSold, _info.tokenPriceInWei, _info, _uniInfo);
+        initializeFairlaunch(flaunch, _info.tokenQuantity, maxTokensToBeSold, _info, _uniInfo);
 
         address pairAddress = uniV2LibPairFor(address(PancakeFactory), address(token), wbnbAddress);
         InvestmentsLiquidityLockTST liquidityLock = new InvestmentsLiquidityLockTST(
                 IERC20(pairAddress),
                 msg.sender,
-                address(presale),
-                _uniInfo.liquidityAddingTime + (_uniInfo.lpTokensLockDurationInDays * 1 days)
+                address(flaunch),
+                _info.closeTime + (_uniInfo.lpTokensLockDurationInDays * 1 days)
             );
 
-        uint256 Id = SSS.addPresaleAddress(address(presale));
-        presale.setInfo(address(liquidityLock), Id);
+        uint256 Id = SSS.addPresaleAddress(address(flaunch));
+        flaunch.setInfo(address(liquidityLock), Id);
 
-        emit PresaleCreated(Id, address(presale), address(liquidityLock));
+        emit PresaleCreated(Id, address(flaunch), address(liquidityLock));
     }
 }

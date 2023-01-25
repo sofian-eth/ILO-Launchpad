@@ -3,7 +3,7 @@ pragma solidity 0.6.12;
 
 import "./TokenTimelock.sol";
 
-contract InvestmentsLiquidityLock is TokenTimelock {
+contract InvestmentsLiquidityLockTST is TokenTimelock {
     constructor(
         IERC20 _token,
         address presaleCreator,

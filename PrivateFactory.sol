@@ -3,7 +3,7 @@ pragma solidity 0.6.12;
 pragma experimental ABIEncoderV2;
 
 import "./IERC20.sol";
-import "./InvestmentsPresale.sol";
+import "./PrivatePresale.sol";
 import "./InvestmentsInfo.sol";
 import "./InvestmentsLiquidityLock.sol";
 
@@ -28,7 +28,7 @@ contract InvestmentsFactoryTST {
 
     struct PresaleInfo {
         address tokenAddress;
-        //address[] whitelistedAddresses;
+        address[] whitelistedAddresses;
         uint256 tokenPriceInWei;
         uint256 hardCapInWei;
         uint256 softCapInWei;
@@ -96,7 +96,7 @@ contract InvestmentsFactoryTST {
             _uniInfo.liquidityPercentageAllocation
         );
 
-        //_presale.addwhitelistedAddresses(_info.whitelistedAddresses);
+        _presale.addwhitelistedAddresses(_info.whitelistedAddresses);
     }
 
     function createPresale(
@@ -105,6 +105,11 @@ contract InvestmentsFactoryTST {
     ) external payable 
     {
         require(msg.value == 0.01 ether, "msg.value less than 0.01 BNB. Send 0.01 BNB to create presale.");
+
+        uint256 sizeofWhitelist = _info.whitelistedAddresses.length;
+
+        require(sizeofWhitelist > 0, "No address found in Whitelisted Addresses");
+
         IERC20 token = IERC20(_info.tokenAddress);
 
         InvestmentsPresaleTST presale = new InvestmentsPresaleTST(address(this), SSS.owner());
@@ -141,6 +146,10 @@ contract InvestmentsFactoryTST {
         PresaleUniswapInfo calldata _uniInfo
     ) external 
     {
+        uint256 sizeofWhitelist = _info.whitelistedAddresses.length;
+
+        require(sizeofWhitelist > 0, "No address found in Whitelisted Addresses");
+        
         IERC20 token = IERC20(_info.tokenAddress);
 
         InvestmentsPresaleTST presale = new InvestmentsPresaleTST(address(this), SSS.owner());
