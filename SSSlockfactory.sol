@@ -33,18 +33,18 @@ contract SSSlockfactory is Ownable{
         return lockAddresses[Id];
     }
 
-    function createLock(info calldata _info) external //payable
+    function createLock(info calldata _infoo) external //payable
     {
         //require(msg.value == 1 ether, "Not sufficient msg value. Please send 1 BNB");
-        IERC20 token = IERC20(_info.tokenAddress);
+        IERC20 token = IERC20(_infoo.tokenAddress);
         
-        SSSlock tlock = new SSSlock(token, msg.sender, _info.unlockTime);
+        SSSlock tlock = new SSSlock(token, _infoo.beneficiary, _infoo.unlockTime);
 
         addlockAddress(address(tlock));
 
-        token.transferFrom(msg.sender, address(tlock), _info.quantity);
+        token.transferFrom(msg.sender, address(tlock), _infoo.quantity);
         //payable(owner()).transfer(msg.value);
         emit lockCreated(msg.sender, address(tlock));
     }
-
+   
 }
