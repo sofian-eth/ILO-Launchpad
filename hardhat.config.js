@@ -20,6 +20,14 @@ module.exports = {
     bnbtestnet: {
       url: "https://bsc-testnet.publicnode.com",
       accounts: ["Private Key"]
+    },
+    ethtestnet: {
+      url: "INFURA URL",
+      accounts: ["Private Key"]
+    },
+    polygontestnet: {
+      url: "INFURA URL",
+      accounts: ["Private Key"]
     }
   }
 };
