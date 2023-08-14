@@ -49,6 +49,7 @@ contract InvestmentsPresale {
     uint256 public presaleCreatorClaimTime; // time when presale creator can collect funds raise
     uint256 public totalCollectedWei; // total wei collected
     uint256 public totalTokens; // total tokens to be sold
+    uint256 public decimals;
     uint256 public tokensLeft; // available tokens to be sold
     uint256 public tokenPriceInWei; // token presale wei price per 1 token
     uint256 public hardCapInWei; // maximum wei amount that can be invested in presale
@@ -142,6 +143,7 @@ contract InvestmentsPresale {
 
     function setGeneralInfo(
         uint256 _totalTokens,
+        uint256 _decimals;
         uint256 _totalTokensinPool,
         uint256 _tokenPriceInWei,
         uint256 _hardCapInWei,
@@ -166,8 +168,10 @@ contract InvestmentsPresale {
         require(_minInvestInWei <= _maxInvestInWei, "Max Invest should be greater than min invest");
         // Open time >= close time
         require(_openTime < _closeTime, "close time to be greater than open time");
+        require(_decimals > 0, "decimals should be greater than 0");
 
         totalTokens = _totalTokensinPool;
+        decimals = _decimals;
         tokensLeft = _totalTokens;
         tokenPriceInWei = _tokenPriceInWei;
         hardCapInWei = _hardCapInWei;
@@ -283,7 +287,7 @@ contract InvestmentsPresale {
     view
     returns (uint256)
     {
-        return _weiAmount.mul(1e18).div(tokenPriceInWei);
+        return _weiAmount.mul(10 ** decimals).div(tokenPriceInWei);
     }
 
     function invest()
@@ -360,7 +364,7 @@ contract InvestmentsPresale {
         }
 
         uint256 liqPoolEthAmount = finalTotalCollectedWei.mul(uniLiquidityPercentageAllocation).div(100);
-        uint256 liqPoolTokenAmount = liqPoolEthAmount.mul(1e18).div(uniListingPriceInWei);
+        uint256 liqPoolTokenAmount = liqPoolEthAmount.mul(10 ** decimals).div(uniListingPriceInWei);
 
         token.approve(address(QuickSwapRouter), liqPoolTokenAmount);
 
