@@ -28,9 +28,9 @@ contract InvestmentsFactory {
 
     struct PresaleInfo {
         address tokenAddress;
+        uint256 decimals;
         //address[] whitelistedAddresses;
         uint256 tokenPriceInWei;
-        uint256 decimals;
         uint256 hardCapInWei;
         uint256 softCapInWei;
         uint256 maxInvestInWei;
