@@ -161,7 +161,7 @@ contract InvestmentsPresale {
         require(_openTime > 0, "open time should be greater than 0");
         require(_closeTime > 0, "close time should be greater than 0");
         require(_hardCapInWei > 0, "hard cap should be greater than 0");
-        (require(_decimals > 0, "Decimals should be greater than 0"));
+        require(_decimals > 0, "Decimals should be greater than 0");
 
         // Hard cap > (token amount * token price)
         require(_hardCapInWei <= _totalTokens.mul(_tokenPriceInWei), "total tokens * token price should be greater than hard cap");
